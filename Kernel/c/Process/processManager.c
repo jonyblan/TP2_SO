@@ -104,7 +104,7 @@ PCB* getNextProcess() {
     return &processes[0];
 }
 
-void scheduler(){
+void schedulerIteration(){
 
     PCB* next= getNextProcess();
     if (currentProcess == next) return;
@@ -122,6 +122,12 @@ void scheduler(){
     //(TO DO) cargar el contexto de next
 }
 
+// Esto se haria cuando el procesoActual llame a exit()
+void terminateProcess(){
+    currentProcess->state= TERMINATED;
+    queueProcess(terminatedProcessesQueue,currentProcess);
+    schedulerIteration();
+}
 /* #include <processManager.h>
 #include <stddef.h>
 #include <videoDriver.h>
