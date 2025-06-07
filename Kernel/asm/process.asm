@@ -1,6 +1,8 @@
 ; loadProcess.asm
 
 global loadProcessAsm
+global prepareStack
+global idle
 
 %macro initializeStack 0
     ; Frame de interrupción esperado por IRETQ (orden: RSP → FLAGS → CS → RIP)

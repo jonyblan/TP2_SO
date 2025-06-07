@@ -90,7 +90,7 @@ pid_t createProcess(void* entryPoint, int priority, int argc, char** argv){
 PCB* getNextProcess() {
     for (int priority = 0; priority < PRIORITY_LEVELS; priority++) {
         PCBQueueADT queue = processQueues[priority];
-        int queueSize = getADTSize(queue);  
+        int queueSize = getPCBQueueSize(queue);  
 
         for (int i = 0; i < queueSize; i++) {
             PCB* candidate = dequeueProcess(queue);  
