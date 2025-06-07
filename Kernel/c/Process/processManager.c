@@ -114,22 +114,26 @@ void schedulerIteration(){
     if (currentProcess == next) return;
     //(TO DO) Guardar contexto del proceso actual
     
-    if (currentProcess->state=RUNNING)
+    if (currentProcess->state == RUNNING)
     {
         currentProcess->state=READY;
         queueProcess(processQueues[currentProcess->priority],currentProcess);
     }
     
+    cleanTerminatedList();
     next->state=RUNNING;
     currentProcess= next;
 
-    //(TO DO) cargar el contexto de next
+    
+    //(TO DO) cargar el contexto del nuevo actual
+
 }
 
 // Esto se haria cuando el procesoActual llame a exit()
 void terminateProcess(){
     currentProcess->state= TERMINATED;
     queueProcess(terminatedProcessesQueue,currentProcess);
+    processCount--;
     schedulerIteration();
 }
 
@@ -142,6 +146,37 @@ void quantumTick() {
     uint8_t priority = currentProcess->priority;
     if (quantumCounter >= quantums[priority]) {
         schedulerIteration();
+    }
+}
+
+void killProcess(uint8_t pid){
+    for (size_t i = 0; i < processCount; i++)
+    {
+        if (processes[i].pid == pid)
+        {
+            processes[i].state = TERMINATED;
+            queueProcess(terminatedProcessesQueue,&processes[i]);
+            processCount--;
+            return 0;
+        }
+    }
+    return -1;
+}
+
+void cleanTerminatedList(){
+    uint8_t size= getPCBQueueSize(terminatedProcessesQueue);
+    PCB* current;
+    for (uint8_t i = 0; i < size; i++)
+    {
+        current= dequeueProcess(terminatedProcessesQueue);
+        if (current->waitingChildren)
+        {
+            queueProcess(terminatedProcessesQueue,current);
+        }
+        else
+        {
+            free(current->stackBase);
+        }
     }
 }
 /* #include <processManager.h>
