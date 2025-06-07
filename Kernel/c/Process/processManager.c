@@ -105,10 +105,11 @@ PCB* getNextProcess() {
 }
 
 void scheduler(){
-    //(TO DO) Guardar contexto del proceso actual
 
     PCB* next= getNextProcess();
-
+    if (currentProcess == next) return;
+    //(TO DO) Guardar contexto del proceso actual
+    
     if (currentProcess->state=RUNNING)
     {
         currentProcess->state=READY;

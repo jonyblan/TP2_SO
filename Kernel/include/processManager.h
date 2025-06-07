@@ -38,7 +38,6 @@ typedef struct ProcessControlBlock {
 	char** argv;
 }PCB;
 
-pid_t createProcess(void* entryPoint);
-void enqueueProcess(PCB* process);
+pid_t createProcess(void* entryPoint, int priority, int argc, char** argv);
 
 #endif
