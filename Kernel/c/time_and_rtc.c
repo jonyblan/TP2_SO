@@ -1,10 +1,12 @@
 #include <time_and_rtc.h>
 #include <stdint.h>
+#include <processManager.h>
 
 static unsigned long ticks = 0;
 static int frequency = 18;
 
 extern void outb(uint16_t port, uint8_t value);
+
 
 #define SECONDS_REG 0x00
 #define MINUTES_REG 0x02
@@ -20,6 +22,7 @@ extern void outb(uint16_t port, uint8_t value);
 void timer_handler()
 {
 	ticks++;
+	quantumTick();
 }
 
 int ticks_elapsed()

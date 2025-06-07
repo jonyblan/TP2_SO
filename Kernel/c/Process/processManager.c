@@ -14,6 +14,8 @@ PCB* currentProcess;
 static uint8_t processCount= 1;
 static pid_t nextPID= 1;
 static uint8_t initialized = 0;
+static uint8_t quantums[PRIORITY_LEVELS] = {10, 5};
+static uint8_t quantumCounter=0;
 
 int initializeProcesses(){
     if (initialized) return 0;
@@ -106,6 +108,8 @@ PCB* getNextProcess() {
 
 void schedulerIteration(){
 
+    quantumCounter=0;
+
     PCB* next= getNextProcess();
     if (currentProcess == next) return;
     //(TO DO) Guardar contexto del proceso actual
@@ -127,6 +131,18 @@ void terminateProcess(){
     currentProcess->state= TERMINATED;
     queueProcess(terminatedProcessesQueue,currentProcess);
     schedulerIteration();
+}
+
+void quantumTick() {
+    //if (currentProcess->state != RUNNING) 
+    //    return; // Por seguridad ESTO VA??? no, no?
+
+    quantumCounter++;
+
+    uint8_t priority = currentProcess->priority;
+    if (quantumCounter >= quantums[priority]) {
+        schedulerIteration();
+    }
 }
 /* #include <processManager.h>
 #include <stddef.h>

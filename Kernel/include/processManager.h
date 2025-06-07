@@ -40,4 +40,6 @@ typedef struct ProcessControlBlock {
 
 pid_t createProcess(void* entryPoint, int priority, int argc, char** argv);
 
+void quantumTick(); //funcion para manejar los quantums
+
 #endif
