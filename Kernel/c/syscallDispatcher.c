@@ -150,7 +150,7 @@ uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t a
         break;
     case 14:;
 		void* entryPoint = (void*)arg1;
-		ret = (uint64_t)createProcess(entryPoint);
+		ret = (uint64_t)createProcess(entryPoint, 0, 0,NULL); //Cablie los parametros, (TO DO) Ponerlos bien
 		break;
 	case 13:;
 		uint64_t *del = (uint64_t *)arg1;

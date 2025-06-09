@@ -3,7 +3,10 @@
 
 #define PROCESS_MAX_NAME_LEN 16
 #define PROCESS_STACK_SIZE 16384 // 16KiB
+#define PRIORITY_LEVELS 2
 #define DEFAULT_PRIORITY 50
+#define MAX_PROCESSES 128
+
 #include <memoryManager.h>
 
 typedef enum{
@@ -11,13 +14,13 @@ typedef enum{
 	RUNNING,
 	BLOCKED,
 	TERMINATED 
-} STATE;
+} State;
 
-typedef struct Process {
+typedef struct ProcessControlBlock {
     pid_t pid;
     char name[PROCESS_MAX_NAME_LEN];        // Process name (optional but useful)
 
-    STATE state;                  	// e.g., READY, RUNNING, BLOCKED, TERMINATED
+    State state;                  	// e.g., READY, RUNNING, BLOCKED, TERMINATED
     uint8_t priority;               // For scheduling
 
     void* stackBase;                // Base of the allocated stack
@@ -25,17 +28,18 @@ typedef struct Process {
 
     void* entryPoint;               // The function to run (e.g., main of the process)
 
-    struct Process* parent;         // For wait() logic
-    struct Process* next;           // For scheduling queue
+    struct PCB* parent;         // For wait() logic
+    struct PCB* next;           // For scheduling queue
 
     uint8_t foreground;                 // 1 = foreground, 0 = background
     uint8_t waitingChildren;            // Track if wait() is needed
 
 	uint8_t argc;
-	char* argv[];
-} Process;
+	char** argv;
+}PCB;
 
-pid_t createProcess(void* entryPoint);
-void enqueueProcess(Process* process);
+pid_t createProcess(void* entryPoint, int priority, int argc, char** argv);
+
+void quantumTick(); //funcion para manejar los quantums
 
 #endif
