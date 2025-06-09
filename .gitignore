@@ -3,3 +3,7 @@
 *.o
 /.vscode
 *.bin
+/Bootloader/Pure64
+Image/x64BareBonesImage.qcow2
+Image/x64BareBonesImage.img
+*.elf
