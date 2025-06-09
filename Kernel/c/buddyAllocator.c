@@ -8,8 +8,11 @@ typedef struct FreeBlock {
 /* 15 listas de bloques libres – una por orden */
 static FreeBlock *free_lists[LEVELS] = {0};
 
-/* ---------- Helper macros --------------------------------------- */
-#define ALIGN_UP(sz)  (((sz) + ((1U<<MIN_ORDER)-1)) & ~((1U<<MIN_ORDER)-1))
+#define ALIGN_UP(sz)  (((sz) + ((1U<<MIN_ORDER)-1)) & ~((1U<<MIN_ORDER)-1)) 
+// Redondea hacia arriba al múltiplo de 64 B (alineación mínima).
+// ej sz = 65 → ALIGN_UP(sz) = 128
+// ej sz = 129 → ALIGN_UP(sz) = 192. el ~ 0 -> 1 ; 1 - > 0.
+
 
 /* order mínimo tal que 2^(order+MIN_ORDER) ≥ size                */
 static inline int order_for_size(size_t size) {
@@ -19,9 +22,18 @@ static inline int order_for_size(size_t size) {
     return order;
 }
 
+
+// calcula la direccion del buddy (gemelo) de un bloque,
+// un par de buddies difiere exactamente en el bit cuyo peso es el tamaño del bloque.
+// Ese bit esta en la posicion order + min_order. 
+// XOR porque es mas eficiente que sumar o restar. si es par el buddy es mayor y al hacerle xor te devuelve al menor
+// si es impar el buddy es menor y al hacerle xor te devuelve al mayor.
+// Por ejemplo, si el bloque es de 64 B (order=0), su buddy es de 64 B y se encuentra a 64 B de distancia.
+// Si el bloque es de 128 B (order=1), su buddy es de 128 B y se encuentra a 128 B de distancia.
 static inline uintptr_t buddy_of(uintptr_t addr, int order) {
     return addr ^ (1UL << (order + MIN_ORDER));
 }
+
 
 /* ---------- Init ------------------------------------------------ */
 void buddy_init(void) {
