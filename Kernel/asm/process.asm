@@ -1,16 +1,11 @@
 ; loadProcess.asm
 
+global contextSwitch
 global loadProcessAsm
 global prepareStack
 global idle
 
 %macro initializeStack 0
-    ; Frame de interrupción esperado por IRETQ (orden: RSP → FLAGS → CS → RIP)
-    push rdx       ; ← Valor que se restaurará como RSP
-    push 0x202     ; ← RFLAGS (habilita interrupciones)
-    push 0x08      ; ← CS (código segment selector: típico para kernel code)
-    push rcx       ; ← RIP → la función a ejecutar
-
     ; Simulación de push_state de todos los registros
     push 0x00      ; RAX
     push rbx
@@ -27,6 +22,48 @@ global idle
     push 0x00      ; R13
     push 0x00      ; R14
     push 0x00      ; R15
+
+     ; Frame de interrupción esperado por IRETQ (orden: RSP → FLAGS → CS → RIP)
+    push rdx       ; ← Valor que se restaurará como RSP
+    push 0x202     ; ← RFLAGS (habilita interrupciones)
+    push 0x08      ; ← CS (código segment selector: típico para kernel code)
+    push rcx       ; ← RIP → la función a ejecutar
+%endmacro
+
+%macro pushState 0
+    push r15
+    push r14
+    push r13
+    push r12
+    push r11
+    push r10
+    push r9
+    push r8
+    push rsi         
+    push rdi
+    push rbp
+    push rdx
+    push rcx
+    push rbx
+    push rax
+%endmacro
+
+%macro popState 0
+    pop rax
+    pop rbx
+    pop rcx
+    pop rdx
+    pop rbp
+    pop rdi
+    pop rsi
+    pop r8
+    pop r9
+    pop r10
+    pop r11
+    pop r12
+    pop r13
+    pop r14
+    pop r15
 %endmacro
 
 section .text
@@ -49,7 +86,21 @@ prepareStack:
 
     ret
 
-idle:
+idle: 
     cli
     hlt
     jmp idle
+
+; rdi = &currentRsp  → dónde guardar el rsp actual del proceso que sale
+; rsi = nextRsp   → nuevo rsp del proceso que entra
+contextSwitch:
+    pushState
+    
+    mov rax, rsp
+    mov [rdi], rax ;guardo el rsp del proceso anterior en su stackPointer
+
+    mov rsp, rsi ;pongo el rsp en el nuevo stackPointer
+
+    popState
+
+    iretq

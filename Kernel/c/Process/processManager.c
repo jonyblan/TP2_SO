@@ -3,8 +3,10 @@
 #include <stddef.h>
 #include <memoryManager.h>
 #include "include/PCBQueueADT.h"
+#include <videoDriver.h>
 
 extern void* prepareStack(int argc, char **argv, void *stack, void *entryPoint);
+extern void contextSwitch(void **oldRsp, void *newRsp);
 extern void idle();
 
 static PCB processes[MAX_PROCESSES];
@@ -67,7 +69,6 @@ pid_t createProcess(void* entryPoint, int priority, int argc, char** argv){
     if (new == NULL) return -1;
     new->pid = nextPID++;
     new->priority = (priority >= PRIORITY_LEVELS) ? PRIORITY_LEVELS - 1 : priority;
-    new->state = READY;
     new->foreground = 1;
     new->waitingChildren = 0;
     new->argc = argc;
@@ -77,10 +78,11 @@ pid_t createProcess(void* entryPoint, int priority, int argc, char** argv){
     new->next = NULL;
     new->stackBase=malloc(PROCESS_STACK_SIZE);
     if (new->stackBase==NULL) return -1;
-
+    
     new->stackPointer=prepareStack(new->argc,new->argv, new->stackBase + PROCESS_STACK_SIZE - 0x08, new->entryPoint);
-
+    
     queueProcess(processQueues[priority], new);
+    new->state = READY;
     
     processCount++;
     
@@ -107,12 +109,8 @@ PCB* getNextProcess() {
 }
 
 void schedulerIteration(){
-
-    quantumCounter=0;
-
     PCB* next= getNextProcess();
     if (currentProcess == next) return;
-    //(TO DO) Guardar contexto del proceso actual
     
     if (currentProcess->state == RUNNING)
     {
@@ -121,12 +119,12 @@ void schedulerIteration(){
     }
     
     cleanTerminatedList();
+    
+    contextSwitch(currentProcess->stackPointer,next->stackPointer);
+    quantumCounter=0;
+    
     next->state=RUNNING;
     currentProcess= next;
-
-    
-    //(TO DO) cargar el contexto del nuevo actual
-
 }
 
 // Esto se haria cuando el procesoActual llame a exit()
@@ -138,8 +136,7 @@ void terminateProcess(){
 }
 
 void quantumTick() {
-    //if (currentProcess->state != RUNNING) 
-    //    return; // Por seguridad ESTO VA??? no, no?
+    if (!initialized) return; 
 
     quantumCounter++;
 
@@ -149,11 +146,13 @@ void quantumTick() {
     }
 }
 
-void killProcess(uint8_t pid){
-    for (size_t i = 0; i < processCount; i++)
+int killProcess(uint8_t pid){
+    for (size_t i = 0; i < MAX_PROCESSES; i++)
     {
         if (processes[i].pid == pid)
         {
+            if (processes[i].state == TERMINATED) return -1;
+            
             processes[i].state = TERMINATED;
             queueProcess(terminatedProcessesQueue,&processes[i]);
             processCount--;
@@ -161,6 +160,18 @@ void killProcess(uint8_t pid){
         }
     }
     return -1;
+}
+
+void showRunningProcesses(){
+    for (size_t i = 0; i < MAX_PROCESSES ; i++)
+    {
+        if (processes[i].state== READY || processes[i].state== RUNNING)
+        {
+            vdPrint("Process "); vdPrintDec(i); vdPrint(" Is running"); vdPrintChar('\n');
+        }
+        
+    }
+    return;
 }
 
 void cleanTerminatedList(){

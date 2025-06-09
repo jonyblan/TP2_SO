@@ -5,6 +5,8 @@
 #include <naiveConsole.h>
 #include <keyboardDriver.h>
 #include <idtLoader.h>
+#include <processManager.h>
+#include <videoDriver.h>
 #include <nano.h>
 
 
@@ -59,6 +61,12 @@ int main()
 	load_idt();
 	
 	setTickFrequency(120);
+
+	if(initializeProcesses() == -1){
+		vdPrint("Processes failed to initialize");
+		vdPrintChar('\n');
+		return 1;
+	}
 
 
 	((EntryPoint)sampleCodeModuleAddress)();

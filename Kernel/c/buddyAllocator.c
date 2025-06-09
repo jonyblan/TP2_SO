@@ -1,11 +1,11 @@
 #include "buddyAllocator.h"
 
-/* ---------- Estructuras internas -------------------------------- */
+/* ---------- Estructuras internas -------------------------------- 
 typedef struct FreeBlock {
     struct FreeBlock *next;
 } FreeBlock;
 
-/* 15 listas de bloques libres – una por orden */
+/* 15 listas de bloques libres – una por orden 
 static FreeBlock *free_lists[LEVELS] = {0};
 
 #define ALIGN_UP(sz)  (((sz) + ((1U<<MIN_ORDER)-1)) & ~((1U<<MIN_ORDER)-1)) 
@@ -14,7 +14,7 @@ static FreeBlock *free_lists[LEVELS] = {0};
 // ej sz = 129 → ALIGN_UP(sz) = 192. el ~ 0 -> 1 ; 1 - > 0.
 
 
-/* order mínimo tal que 2^(order+MIN_ORDER) ≥ size                */
+/* order mínimo tal que 2^(order+MIN_ORDER) ≥ size                
 static inline int order_for_size(size_t size) {
     size_t s = 1U << MIN_ORDER;
     int order = 0;
@@ -35,28 +35,27 @@ static inline uintptr_t buddy_of(uintptr_t addr, int order) {
 }
 
 
-/* ---------- Init ------------------------------------------------ */
+/* ---------- Init ------------------------------------------------
 void buddy_init(void) {
     for (int i = 0; i < LEVELS; i++) free_lists[i] = NULL;
 
     FreeBlock *first = (FreeBlock *)HEAP_START;
     first->next      = NULL;
-    free_lists[LEVELS-1] = first;         /* bloque de 1 MiB */
+    free_lists[LEVELS-1] = first;         /* bloque de 1 MiB 
 }
 
-/* ---------- Alloc ---------------------------------------------- */
+/* ---------- Alloc ---------------------------------------------- 
 void *buddy_alloc(size_t size) {
-    if (!free_lists[LEVELS-1]) buddy_init();      /* 1ª vez */
-
+    if (!free_lists[LEVELS-1]) buddy_init();      /* 1ª vez 
     size = ALIGN_UP(size);
     int want = order_for_size(size);
 
-    /* 1) Buscar primer nivel con bloque disponible */
+    /* 1) Buscar primer nivel con bloque disponible 
     int i = want;
     while (i < LEVELS && !free_lists[i]) i++;
-    if (i == LEVELS) return NULL;                 /* sin memoria */
+    if (i == LEVELS) return NULL;                 /* sin memoria 
 
-    /* 2) Sacar bloque y hacer split mientras sea mayor que el pedido */
+    /* 2) Sacar bloque y hacer split mientras sea mayor que el pedido 
     FreeBlock *block = free_lists[i];
     free_lists[i]    = block->next;
 
@@ -67,12 +66,12 @@ void *buddy_alloc(size_t size) {
         free_lists[i]    = buddy;
     }
 
-    /* 3) Guardar el order en cabecera de 4 B y devolver */
+    /* 3) Guardar el order en cabecera de 4 B y devolver 
     *((uint32_t*)block) = want;
     return (void*)((uint8_t*)block + sizeof(uint32_t));
 }
 
-/* ---------- Free ------------------------------------------------ */
+/* ---------- Free ------------------------------------------------ 
 void buddy_free(void *ptr) {
     if (!ptr) return;
     uint8_t *p   = (uint8_t*)ptr - sizeof(uint32_t);
@@ -82,28 +81,28 @@ void buddy_free(void *ptr) {
     while (order < LEVELS-1) {
         uintptr_t buddy_addr = buddy_of(addr, order);
 
-        /* Buscar al buddy en la free-list del mismo orden */
+        /* Buscar al buddy en la free-list del mismo orden 
         FreeBlock **prev = &free_lists[order];
         FreeBlock  *curr = free_lists[order];
         while (curr && (uintptr_t)curr != buddy_addr) {
             prev = &curr->next;
             curr = curr->next;
         }
-        if (!curr) break;                 /* buddy está ocupado */
+        if (!curr) break;                 /* buddy está ocupado 
 
-        /*  -> fusionar: quitar buddy de lista y subir un nivel */
-        *prev = curr->next;               /* lo saca de la lista */
+        /*  -> fusionar: quitar buddy de lista y subir un nivel 
+        *prev = curr->next;               /* lo saca de la lista 
         addr  = (addr < buddy_addr) ? addr : buddy_addr;
         order++;
     }
 
-    /* Insertar bloque fusionado en su lista correspondiente */
+    /* Insertar bloque fusionado en su lista correspondiente 
     FreeBlock *blk = (FreeBlock*)addr;
     blk->next      = free_lists[order];
     free_lists[order] = blk;
 }
 
-/* ---------- Stats (para comando `mem`) -------------------------- */
+/* ---------- Stats (para comando `mem`) -------------------------- 
 void buddy_stats(char *buf, size_t n) {
     int len = 0;
     len += snprintf(buf+len, n-len, "Buddy Free-lists:\n");
@@ -115,3 +114,4 @@ void buddy_stats(char *buf, size_t n) {
                         i, 1U << (i+MIN_ORDER), count);
     }
 }
+    */
