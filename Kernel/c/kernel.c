@@ -16,6 +16,7 @@ extern uint8_t data;
 extern uint8_t bss;
 extern uint8_t endOfKernelBinary;
 extern uint8_t endOfKernel;
+extern void firstContextSwitch(void *newStack);
 
 static const uint64_t PageSize = 0x1000;
 
@@ -23,6 +24,22 @@ static void *const sampleCodeModuleAddress = (void *)0x400000;
 static void *const sampleDataModuleAddress = (void *)0x500000;
 
 typedef int (*EntryPoint)();
+
+void testProcessA(int argc, char **argv) {
+	 while (1) {
+        vdPrint("Process A running");
+		vdPrintChar('\n');
+        sleep(5);
+    }
+}
+
+void testProcessB(int argc, char **argv) {
+    while (1) {
+        vdPrint("Process B running");
+		vdPrintChar('\n');
+        sleep(5);
+    }
+}
 
 void nanoFace(){
     for (int i = 0; i < _384_WIDTH * _384_HEIGHT; i++)
@@ -69,7 +86,19 @@ int main()
 	}
 
 
-	((EntryPoint)sampleCodeModuleAddress)();
+	PCB* firstProcess = getNextProcess();
+	firstProcess->state = RUNNING;
+	currentProcess = firstProcess;
 
+	char *argv[] = { "A", NULL };
+	createProcess(testProcessA, 1, 1, argv);	
+
+	firstContextSwitch(firstProcess->stackPointer);
+
+
+	//((EntryPoint)sampleCodeModuleAddress)();
+	//char *argv[] = { "init", NULL };
+	//createProcess(sampleCodeModuleAddress, 0, 1, argv);	
+	
 	return 0;
 }

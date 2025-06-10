@@ -19,6 +19,14 @@ static uint8_t initialized = 0;
 static uint8_t quantums[PRIORITY_LEVELS] = {10, 5};
 static uint8_t quantumCounter=0;
 
+void testProcessC() {
+    while (1) {
+        vdPrint("Process C running");
+		vdPrintChar('\n');
+        sleep(100);
+    }
+}
+
 int initializeProcesses(){
     if (initialized) return 0;
 
@@ -45,11 +53,12 @@ int initializeProcesses(){
     idlePCB->state=READY;
     idlePCB->priority=0;
     idlePCB->stackBase= malloc(PROCESS_STACK_SIZE);
-    idlePCB->entryPoint=idle;
+    idlePCB->entryPoint=testProcessC;
     if (idlePCB->stackBase == NULL) return 1;
     idlePCB->stackPointer=prepareStack(0, NULL, idlePCB->stackBase + PROCESS_STACK_SIZE - 0x08, idlePCB->entryPoint);
 
     currentProcess= idlePCB;
+    queueProcess(processQueues[idlePCB->priority],idlePCB);
     initialized=1;
     return 0;
 }
@@ -60,7 +69,7 @@ pid_t createProcess(void* entryPoint, int priority, int argc, char** argv){
 
     for (size_t i = 0; i < MAX_PROCESSES; i++)
     {
-       if (processes[i].state == TERMINATED || processes[i].pid == 0) {
+       if (processes[i].state == TERMINATED ) {
             new = &processes[i];
             break;
         }
@@ -96,7 +105,7 @@ PCB* getNextProcess() {
 
         for (int i = 0; i < queueSize; i++) {
             PCB* candidate = dequeueProcess(queue);  
-            if (candidate->state == READY) {
+            if (candidate->state == READY ) {
                 queueProcess(queue, candidate);     
                 return candidate;
             } else {
@@ -104,14 +113,13 @@ PCB* getNextProcess() {
             }
         }
     }
-    
     return &processes[0];
 }
 
 void schedulerIteration(){
     PCB* next= getNextProcess();
+    vdPrintDec(next->pid);
     if (currentProcess == next) return;
-    
     if (currentProcess->state == RUNNING)
     {
         currentProcess->state=READY;
@@ -120,11 +128,13 @@ void schedulerIteration(){
     
     cleanTerminatedList();
     
-    contextSwitch(currentProcess->stackPointer,next->stackPointer);
-    quantumCounter=0;
-    
+    vdPrint("VOY A SWITCHEAR");
     next->state=RUNNING;
     currentProcess= next;
+    quantumCounter=0;
+    contextSwitch(&(currentProcess->stackPointer),next->stackPointer);
+    vdPrint("Switchie");
+    
 }
 
 // Esto se haria cuando el procesoActual llame a exit()
@@ -140,6 +150,7 @@ void quantumTick() {
 
     quantumCounter++;
 
+    //vdPrintDec(quantumCounter);
     uint8_t priority = currentProcess->priority;
     if (quantumCounter >= quantums[priority]) {
         schedulerIteration();

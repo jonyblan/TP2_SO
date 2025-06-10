@@ -4,6 +4,7 @@ global contextSwitch
 global loadProcessAsm
 global prepareStack
 global idle
+global firstContextSwitch
 
 %macro initializeStack 0
     ; Simulación de push_state de todos los registros
@@ -24,7 +25,7 @@ global idle
     push 0x00      ; R15
 
      ; Frame de interrupción esperado por IRETQ (orden: RSP → FLAGS → CS → RIP)
-    push rdx       ; ← Valor que se restaurará como RSP
+    push rdx
     push 0x202     ; ← RFLAGS (habilita interrupciones)
     push 0x08      ; ← CS (código segment selector: típico para kernel code)
     push rcx       ; ← RIP → la función a ejecutar
@@ -95,12 +96,15 @@ idle:
 ; rsi = nextRsp   → nuevo rsp del proceso que entra
 contextSwitch:
     pushState
-    
     mov rax, rsp
-    mov [rdi], rax ;guardo el rsp del proceso anterior en su stackPointer
+    mov [rdi], rax
 
-    mov rsp, rsi ;pongo el rsp en el nuevo stackPointer
-
+    mov rsp, rsi
     popState
-
     iretq
+
+
+
+firstContextSwitch:
+    mov rsp, rdi        ; rdi = nuevo stack pointer
+    iretq               ; salto directo usando el stack ya armado por prepareStack
