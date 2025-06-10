@@ -91,11 +91,15 @@ int main()
 	currentProcess = firstProcess;
 
 	char *argv[] = { "A", NULL };
-	createProcess(testProcessA, 1, 1, argv);	
+	//createProcess(testProcessA, 1, 1, argv);	
 
-	firstContextSwitch(firstProcess->stackPointer);
+	//firstContextSwitch(firstProcess->stackPointer);
 
-
+	while (1)
+	{
+		/* code */
+	}
+	
 	//((EntryPoint)sampleCodeModuleAddress)();
 	//char *argv[] = { "init", NULL };
 	//createProcess(sampleCodeModuleAddress, 0, 1, argv);	

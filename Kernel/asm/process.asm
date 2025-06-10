@@ -25,10 +25,10 @@ global firstContextSwitch
     push 0x00      ; R15
 
      ; Frame de interrupción esperado por IRETQ (orden: RSP → FLAGS → CS → RIP)
-    push rdx
-    push 0x202     ; ← RFLAGS (habilita interrupciones)
-    push 0x08      ; ← CS (código segment selector: típico para kernel code)
+    ;push rdx
     push rcx       ; ← RIP → la función a ejecutar
+    push 0x08      ; ← CS (código segment selector: típico para kernel code)
+    push 0x202     ; ← RFLAGS (habilita interrupciones)
 %endmacro
 
 %macro pushState 0
@@ -92,13 +92,13 @@ idle:
     hlt
     jmp idle
 
-; rdi = &currentRsp  → dónde guardar el rsp actual del proceso que sale
+; rdi = currentRsp  → dónde guardar el rsp actual del proceso que sale
 ; rsi = nextRsp   → nuevo rsp del proceso que entra
 contextSwitch:
     pushState
     mov rax, rsp
-    mov [rdi], rax
-
+    mov rdi, rax
+    
     mov rsp, rsi
     popState
     iretq

@@ -119,7 +119,7 @@ PCB* getNextProcess() {
 void schedulerIteration(){
     PCB* next= getNextProcess();
     vdPrintDec(next->pid);
-    if (currentProcess == next) return;
+    //if (currentProcess == next) return;
     if (currentProcess->state == RUNNING)
     {
         currentProcess->state=READY;
@@ -132,7 +132,7 @@ void schedulerIteration(){
     next->state=RUNNING;
     currentProcess= next;
     quantumCounter=0;
-    contextSwitch(&(currentProcess->stackPointer),next->stackPointer);
+    contextSwitch(currentProcess->stackPointer,next->stackPointer);
     vdPrint("Switchie");
     
 }
