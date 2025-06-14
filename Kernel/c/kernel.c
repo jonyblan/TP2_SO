@@ -75,8 +75,7 @@ int main()
 	}
 	
 	((EntryPoint)sampleCodeModuleAddress)();
-	//char *argv[] = { "init", NULL };
-	//createProcess(sampleCodeModuleAddress, 0, 1, argv);	
+
 	
 	return 0;
 }
