@@ -1,7 +1,7 @@
 #ifndef PROCESS_MANAGER_H
 #define PROCESS_MANAGER_H
 
-#define PROCESS_MAX_NAME_LEN 16
+#define PROCESS_MAX_NAME_LEN 40
 #define PROCESS_STACK_SIZE 16384 // 16KiB
 #define PRIORITY_LEVELS 2
 #define DEFAULT_PRIORITY 50
@@ -37,9 +37,33 @@ typedef struct ProcessControlBlock {
 	uint8_t argc;
 	char** argv;
 }PCB;
+
+typedef struct processStack{
+    void *r15;
+    void *r14;
+    void *r13;
+    void *r12;
+    void *r11;
+    void *r10;
+    void *r9;
+    void *r8;
+    void *rsi;
+    void *rdi;
+    void *rbp;
+    void *rdx;
+    void *rcx;
+    void *rbx;
+    void *rax;
+    void *rip;
+    void *cs;
+    void *rflags;
+    void *rsp;
+    void *ss;
+}processStack;
+
 extern PCB* currentProcess;
 
-pid_t createProcess(void* entryPoint, int priority, int argc, char** argv);
+pid_t createProcess(void (*fn)(uint8_t, char **), int priority, int argc, char** argv);
 
 int initializeProcesses();
 
@@ -50,4 +74,8 @@ int killProcess(uint8_t pid);
 void quantumTick(); //funcion para manejar los quantums
 
 void showRunningProcesses();
+
+void createFirstProcess(void (*fn)(uint8_t, char **), int argc, char** argv);
+
+void yield();
 #endif

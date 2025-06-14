@@ -22,7 +22,6 @@ extern void outb(uint16_t port, uint8_t value);
 void timer_handler()
 {
 	ticks++;
-	quantumTick();
 }
 
 int ticks_elapsed()

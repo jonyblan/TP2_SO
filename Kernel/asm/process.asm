@@ -2,11 +2,12 @@
 
 global contextSwitch
 global loadProcessAsm
-global prepareStack
+;global prepareStack
 global idle
 global firstContextSwitch
 
 %macro initializeStack 0
+    
     ; Simulación de push_state de todos los registros
     push 0x00      ; RAX
     push rbx
@@ -23,48 +24,48 @@ global firstContextSwitch
     push 0x00      ; R13
     push 0x00      ; R14
     push 0x00      ; R15
-
-     ; Frame de interrupción esperado por IRETQ (orden: RSP → FLAGS → CS → RIP)
+    ; Frame de interrupción esperado por IRETQ (orden: RSP → FLAGS → CS → RIP)
     ;push rdx
     push rcx       ; ← RIP → la función a ejecutar
     push 0x08      ; ← CS (código segment selector: típico para kernel code)
     push 0x202     ; ← RFLAGS (habilita interrupciones)
+
 %endmacro
 
 %macro pushState 0
-    push r15
-    push r14
-    push r13
-    push r12
-    push r11
-    push r10
-    push r9
-    push r8
-    push rsi         
-    push rdi
-    push rbp
-    push rdx
-    push rcx
-    push rbx
-    push rax
+	push rax
+	push rbx
+	push rcx
+	push rdx
+	push rbp
+	push rdi
+	push rsi
+	push r8
+	push r9
+	push r10
+	push r11
+	push r12
+	push r13
+	push r14
+	push r15
 %endmacro
 
 %macro popState 0
-    pop rax
-    pop rbx
-    pop rcx
-    pop rdx
-    pop rbp
-    pop rdi
-    pop rsi
-    pop r8
-    pop r9
-    pop r10
-    pop r11
-    pop r12
-    pop r13
-    pop r14
-    pop r15
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop r11
+	pop r10
+	pop r9
+	pop r8
+	pop rsi
+	pop rdi
+	pop rbp
+	pop rdx
+	pop rcx
+	pop rbx
+	pop rax
 %endmacro
 
 section .text
@@ -74,18 +75,18 @@ loadProcessAsm:
     pop rbp          ; Restore base pointer
     ret              ; Return to entryPoint
 
-prepareStack:
-    mov r8, rsp ; Uso r8 como backup del stack actual
+;prepareStack:
+;    mov r8, rsp ; Uso r8 como backup del stack actual
 
-    mov rsp, rdx ; Set the stack pointer to the new stack
+;   mov rsp, rdx ; Set the stack pointer to the new stack
 
-    initializeStack
+;    initializeStack
 
-    mov rax, rsp ; Retorno el nuevo rsp
+;    mov rax, rsp ; Retorno el nuevo rsp
 
-    mov rsp, r8
+;    mov rsp, r8
 
-    ret
+;    ret
 
 idle: 
     cli
@@ -96,11 +97,13 @@ idle:
 ; rsi = nextRsp   → nuevo rsp del proceso que entra
 contextSwitch:
     pushState
-    mov rax, rsp
-    mov rdi, rax
+
+    mov rdi, rsp
     
     mov rsp, rsi
+
     popState
+
     iretq
 
 

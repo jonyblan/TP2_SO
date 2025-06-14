@@ -8,6 +8,7 @@
 #include <processManager.h>
 #include <videoDriver.h>
 #include <nano.h>
+#include "Process/include/scheduler.h"
 
 
 extern uint8_t text;
@@ -25,21 +26,6 @@ static void *const sampleDataModuleAddress = (void *)0x500000;
 
 typedef int (*EntryPoint)();
 
-void testProcessA(int argc, char **argv) {
-	 while (1) {
-        vdPrint("Process A running");
-		vdPrintChar('\n');
-        sleep(5);
-    }
-}
-
-void testProcessB(int argc, char **argv) {
-    while (1) {
-        vdPrint("Process B running");
-		vdPrintChar('\n');
-        sleep(5);
-    }
-}
 
 void nanoFace(){
     for (int i = 0; i < _384_WIDTH * _384_HEIGHT; i++)
@@ -78,29 +64,17 @@ int main()
 	load_idt();
 	
 	setTickFrequency(120);
-
-	if(initializeProcesses() == -1){
-		vdPrint("Processes failed to initialize");
-		vdPrintChar('\n');
-		return 1;
-	}
-
-
-	PCB* firstProcess = getNextProcess();
-	firstProcess->state = RUNNING;
-	currentProcess = firstProcess;
-
-	char *argv[] = { "A", NULL };
-	//createProcess(testProcessA, 1, 1, argv);	
-
-	//firstContextSwitch(firstProcess->stackPointer);
-
+	
+	//initScheduler(getStackBase());
+	char *argv[] = {0};
+	//createFirstProcess((void *)sampleCodeModuleAddress, 0, argv);
+	//_sti();
 	while (1)
 	{
 		/* code */
 	}
 	
-	//((EntryPoint)sampleCodeModuleAddress)();
+	((EntryPoint)sampleCodeModuleAddress)();
 	//char *argv[] = { "init", NULL };
 	//createProcess(sampleCodeModuleAddress, 0, 1, argv);	
 	

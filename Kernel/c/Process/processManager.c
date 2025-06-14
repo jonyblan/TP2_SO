@@ -4,20 +4,16 @@
 #include <memoryManager.h>
 #include "include/PCBQueueADT.h"
 #include <videoDriver.h>
+#include "include/scheduler.h"
 
-extern void* prepareStack(int argc, char **argv, void *stack, void *entryPoint);
-extern void contextSwitch(void **oldRsp, void *newRsp);
 extern void idle();
 
 static PCB processes[MAX_PROCESSES];
-static PCBQueueADT processQueues[PRIORITY_LEVELS];
 static PCBQueueADT terminatedProcessesQueue; //Cola de procesos esperando a que le hagan wait() (Si terminan, su PCB se marca como TERMINATED, por lo que se podria pisar el PCB)
 PCB* currentProcess;
 static uint8_t processCount= 1;
 static pid_t nextPID= 1;
-static uint8_t initialized = 0;
-static uint8_t quantums[PRIORITY_LEVELS] = {10, 5};
-static uint8_t quantumCounter=0;
+
 
 void testProcessC() {
     while (1) {
@@ -25,45 +21,74 @@ void testProcessC() {
 		vdPrintChar('\n');
         sleep(100);
     }
+    return;
 }
 
-int initializeProcesses(){
-    if (initialized) return 0;
-
-    //Si el estado del PCB esta en TERMINATED, esta disponible
-    for (size_t i = 0; i < MAX_PROCESSES; i++)
-    {
-        processes[i].state= TERMINATED;
-    }
-    
-    
-    //Iniciar colas de las diferentes priorities y los procesos terminados a espera de wait
-    for (size_t i = 0; i < PRIORITY_LEVELS; i++)
-    {   
-        processQueues[i] = CreatePCBQueueADT();
-        if (processQueues[i] == NULL) return -1;
-    }
-
-    terminatedProcessesQueue= CreatePCBQueueADT();
-    if (terminatedProcessesQueue == NULL) return -1;
-
-    //Inicializar y poner en ejecucion el proceso idle
-    PCB* idlePCB= &processes[0];
-    idlePCB->pid=0;
-    idlePCB->state=READY;
-    idlePCB->priority=0;
-    idlePCB->stackBase= malloc(PROCESS_STACK_SIZE);
-    idlePCB->entryPoint=testProcessC;
-    if (idlePCB->stackBase == NULL) return 1;
-    idlePCB->stackPointer=prepareStack(0, NULL, idlePCB->stackBase + PROCESS_STACK_SIZE - 0x08, idlePCB->entryPoint);
-
-    currentProcess= idlePCB;
-    queueProcess(processQueues[idlePCB->priority],idlePCB);
-    initialized=1;
-    return 0;
+void myExit(){
+    uint16_t pid = getCurrentPID();
+    killProcess(pid);
 }
 
-pid_t createProcess(void* entryPoint, int priority, int argc, char** argv){
+void launchProcess(void (*fn)(uint8_t, char **), uint8_t argc, char *argv[]) {
+  fn(argc, argv);
+  myExit();
+}
+
+void idleTest() {
+    vdPrint("Idle!\n");
+    while(1);
+}
+void *stackStart= (void*) 0x1000000;
+
+
+
+void prepareStack(PCB* PCB, void* stack,void* entrypoint) {
+    processStack *pStack = stack - sizeof(processStack);
+    pStack->rsp = stack;
+    pStack->rbp = stack;
+    pStack->cs = (void *)0x8;
+    pStack->rflags = (void *)0x202;
+    pStack->ss = 0x0;
+    pStack->rip = entrypoint;
+    PCB->stackPointer = pStack;
+}
+
+void loadArguments(void (*fn)(uint8_t, char **), uint8_t argc, char *argv[],
+                    void *stack) {
+    processStack *pStack = stack - sizeof(processStack);
+    pStack->rdi = fn;
+    pStack->rsi = (void *)(uintptr_t)argc; 
+    pStack->rdx = argv; 
+}
+void createFirstProcess(void (*fn)(uint8_t, char **), int argc, char** argv){
+    vdPrint("Creando primer proceso");
+    vdPrint("Creando primer proceso");
+    PCB* new= &processes[0];
+    new->pid=0;
+    new->state=READY;
+    new->priority=2;
+    //new->stackBase= malloc(PROCESS_STACK_SIZE);
+    new->stackBase = stackStart;
+    new->entryPoint=launchProcess;
+    processStack *newStack = new->stackBase - sizeof(processStack);
+    newStack->rsp = new->stackBase;
+    newStack->rbp = new->stackBase;
+    newStack->cs = (void *)0x8; // Kernel code segment
+    newStack->rflags = (void *)0x202; // Set interrupt flag
+    newStack->ss = 0x0; // Kernel data segment
+    newStack->rip = launchProcess; // Entry point for the idle process
+    newStack->rdi = fn;
+    newStack->rsi = (void *)(uintptr_t) argc; // Argument count
+    newStack->rdx = argv; // Argument vector
+    vdPrint("Creando primer proceso");
+    scheduleProcess(new);
+    
+    vdPrint("Creando primer proceso\n");
+    
+    processCount++;
+}
+
+pid_t createProcess(void (*fn)(uint8_t, char **), int priority, int argc, char** argv){
     if (processCount>= MAX_PROCESSES) return -1;
     PCB* new=NULL;
 
@@ -82,15 +107,15 @@ pid_t createProcess(void* entryPoint, int priority, int argc, char** argv){
     new->waitingChildren = 0;
     new->argc = argc;
     new->argv = argv;
-    new->entryPoint = entryPoint;
+    new->entryPoint = launchProcess;
     new->parent = currentProcess;
     new->next = NULL;
-    new->stackBase=malloc(PROCESS_STACK_SIZE);
-    if (new->stackBase==NULL) return -1;
+    //new->stackBase=malloc(PROCESS_STACK_SIZE);
+    new->stackBase = (stackStart + new->pid * PROCESS_STACK_SIZE);
     
-    new->stackPointer=prepareStack(new->argc,new->argv, new->stackBase + PROCESS_STACK_SIZE - 0x08, new->entryPoint);
-    
-    queueProcess(processQueues[priority], new);
+    prepareStack(new, new->stackBase, new->entryPoint);
+    loadArguments(fn, argc, argv,new->stackBase);
+    scheduleProcess(new);
     new->state = READY;
     
     processCount++;
@@ -98,7 +123,8 @@ pid_t createProcess(void* entryPoint, int priority, int argc, char** argv){
     return new->pid;
 }
 
-PCB* getNextProcess() {
+
+/* PCB* getNextProcess() {
     for (int priority = 0; priority < PRIORITY_LEVELS; priority++) {
         PCBQueueADT queue = processQueues[priority];
         int queueSize = getPCBQueueSize(queue);  
@@ -114,48 +140,8 @@ PCB* getNextProcess() {
         }
     }
     return &processes[0];
-}
+} */
 
-void schedulerIteration(){
-    PCB* next= getNextProcess();
-    vdPrintDec(next->pid);
-    //if (currentProcess == next) return;
-    if (currentProcess->state == RUNNING)
-    {
-        currentProcess->state=READY;
-        queueProcess(processQueues[currentProcess->priority],currentProcess);
-    }
-    
-    cleanTerminatedList();
-    
-    vdPrint("VOY A SWITCHEAR");
-    next->state=RUNNING;
-    currentProcess= next;
-    quantumCounter=0;
-    contextSwitch(currentProcess->stackPointer,next->stackPointer);
-    vdPrint("Switchie");
-    
-}
-
-// Esto se haria cuando el procesoActual llame a exit()
-void terminateProcess(){
-    currentProcess->state= TERMINATED;
-    queueProcess(terminatedProcessesQueue,currentProcess);
-    processCount--;
-    schedulerIteration();
-}
-
-void quantumTick() {
-    if (!initialized) return; 
-
-    quantumCounter++;
-
-    //vdPrintDec(quantumCounter);
-    uint8_t priority = currentProcess->priority;
-    if (quantumCounter >= quantums[priority]) {
-        schedulerIteration();
-    }
-}
 
 int killProcess(uint8_t pid){
     for (size_t i = 0; i < MAX_PROCESSES; i++)
@@ -167,11 +153,17 @@ int killProcess(uint8_t pid){
             processes[i].state = TERMINATED;
             queueProcess(terminatedProcessesQueue,&processes[i]);
             processCount--;
+            if (getCurrentPID() == pid)
+            {
+                yield();
+            }
             return 0;
         }
     }
     return -1;
 }
+
+void yield(){/* int_20();*/ return; }
 
 void showRunningProcesses(){
     for (size_t i = 0; i < MAX_PROCESSES ; i++)
