@@ -62,11 +62,6 @@ int main()
 	
 	setTickFrequency(120);
 
-	if(initializeProcesses() == -1){
-		vdPrint("Processes failed to initialize");
-		vdPrintChar('\n');
-		return 1;
-	}
 
 
 	((EntryPoint)sampleCodeModuleAddress)();
