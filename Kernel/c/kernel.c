@@ -21,9 +21,9 @@ extern uint8_t endOfKernel;
 
 static const uint64_t PageSize = 0x1000;
 
-void testProcessA(int x) {
+void testProcessA(int a,int b/*, int c, int d*/) {
 	while (1) {
-		vdPrintDec(x);
+		vdPrintDec(a);vdPrintDec(b);//vdPrintDec(c);vdPrintDec(d);
 		vdPrintChar('\n');
 		sleep(10);
 	}
@@ -90,8 +90,9 @@ int main()
 	
 	initScheduler(getStackBase());
 
-	char *argv[] = {0};
-	createFirstProcess((void*)sampleCodeModuleAddress, 0, argv);
+	char *argv[] = {"1","2"/*, "3", "4"*/};
+	//createFirstProcess((void*)sampleCodeModuleAddress, 0, argv);
+	createProcess((void*)testProcessA, 1, 2, argv);
 	setTickFrequency(120);
 	_sti();
 	while (1){}

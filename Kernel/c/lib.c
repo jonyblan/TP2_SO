@@ -51,7 +51,7 @@ void * memcpy(void * destination, const void * source, uint64_t length)
 
 uint64_t strlen(const char *string) {
   uint64_t i = 0;
-  while (string[i] != 0) {
+  while (string[i] != '\0') {
     i++;
   }
   return i;

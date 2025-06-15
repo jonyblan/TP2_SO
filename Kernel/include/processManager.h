@@ -69,7 +69,7 @@ int initializeProcesses();
 
 void terminateProcess();
 
-int killProcess(uint8_t pid);
+uint8_t killProcess(uint8_t pid);
 
 void quantumTick(); //funcion para manejar los quantums
 
