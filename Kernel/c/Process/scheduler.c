@@ -1,15 +1,20 @@
-#include "include/scheduler.h"
+#include <scheduler.h>
 #include <stdint.h>
 #include <stddef.h>
-#include "include/PCBQueueADT.h"
+#include <PCBQueueADT.h>
 #include <processManager.h>
 #include <memoryManager.h>
-
+#include <time_and_rtc.h>
 
 schedulerStruct *scheduler;
 
 void initScheduler(void *stackBase) {
   scheduler = malloc(sizeof(schedulerStruct));
+  if(scheduler == NULL) {
+    vdPrint("Error al inicializar el scheduler: malloc fallido");
+    sleep(1);
+    return;
+  }
   for (uint8_t i = 0; i < MAX_PRIO; i++) {
     scheduler->schedule[i] = CreatePCBQueueADT();
   }
@@ -31,13 +36,17 @@ void descheduleProcess(PCB *pcb) {
 }
 
 void *schedule(void *rsp) {
+  if (scheduler == NULL) {
+    vdPrint("Scheduler mal inicializado o sin proceso actual");
+    sleep(1);
+    return rsp;
+}
   scheduler->currentRunningPCB->stackPointer = rsp;
   if (scheduler->count[0] == 1) {
     for (uint8_t i = 0; i < MAX_PRIO; i++) {
       scheduler->count[i] = 0;
     }
   }
-  
   if (scheduler->currentRunningPCB->state == READY ) {
     queueProcess(scheduler->schedule[scheduler->currentRunningPCB->priority], scheduler->currentRunningPCB);
   }
@@ -49,6 +58,11 @@ void *schedule(void *rsp) {
       break;
     }
   }
+ if (scheduler->currentRunningPCB == NULL) {
+    vdPrint("No hay proceso para correr");
+    sleep(100);
+    return NULL;
+}
   return scheduler->currentRunningPCB->stackPointer;
 }
 

@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include "PCBQueueADT.h"
-#include "processManager.h"
+#include <PCBQueueADT.h>
+#include <processManager.h>
 #define MAX_PRIO 3
 
 

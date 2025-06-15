@@ -2,9 +2,9 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <memoryManager.h>
-#include "include/PCBQueueADT.h"
+#include <PCBQueueADT.h>
 #include <videoDriver.h>
-#include "include/scheduler.h"
+#include <scheduler.h>
 
 extern void idle();
 
@@ -38,6 +38,7 @@ void idleTest() {
     vdPrint("Idle!\n");
     while(1);
 }
+
 void *stackStart= (void*) 0x1000000;
 
 
@@ -61,12 +62,10 @@ void loadArguments(void (*fn)(uint8_t, char **), uint8_t argc, char *argv[],
     pStack->rdx = argv; 
 }
 void createFirstProcess(void (*fn)(uint8_t, char **), int argc, char** argv){
-    vdPrint("Creando primer proceso");
-    vdPrint("Creando primer proceso");
     PCB* new= &processes[0];
     new->pid=0;
     new->state=READY;
-    new->priority=2;
+    new->priority=1;
     //new->stackBase= malloc(PROCESS_STACK_SIZE);
     new->stackBase = stackStart;
     new->entryPoint=launchProcess;
@@ -80,10 +79,8 @@ void createFirstProcess(void (*fn)(uint8_t, char **), int argc, char** argv){
     newStack->rdi = fn;
     newStack->rsi = (void *)(uintptr_t) argc; // Argument count
     newStack->rdx = argv; // Argument vector
-    vdPrint("Creando primer proceso");
+    new->stackPointer = newStack;
     scheduleProcess(new);
-    
-    vdPrint("Creando primer proceso\n");
     
     processCount++;
 }
