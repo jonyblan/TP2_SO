@@ -91,9 +91,7 @@ int main()
 	initScheduler(getStackBase());
 
 	char *argv[] = {0};
-	createFirstProcess((void*)testProcessA, 0, argv);
-	createProcess((void*)testProcessB, 1,0, argv);
-	createProcess((void*)testProcessC, 0,0, argv);
+	createFirstProcess((void*)sampleCodeModuleAddress, 0, argv);
 	setTickFrequency(120);
 	_sti();
 	while (1){}
