@@ -30,6 +30,7 @@ int queueProcess(PCBQueueADT adt, void* process){
     adt->size++;
     adt->queue[adt->tail]=process;
     adt->tail= (adt->tail + 1) % MAX_PROCESSES;
+    return 0; 
 }
 
 void* dequeueProcess(PCBQueueADT adt){
@@ -41,6 +42,33 @@ void* dequeueProcess(PCBQueueADT adt){
     return toReturn;
 }
 
-uint8_t getPCBQueueSize(PCBQueueADT adt){
-    return adt->size;
+int removeProcess(PCBQueueADT adt, PCB* PCB){
+    if (adt->size == 0) return -1;
+
+    uint8_t pos;
+    uint8_t index = -1;
+    for (uint8_t i = 0; i < adt->size; i++)
+    {
+        pos = (adt->head + i) % MAX_PROCESSES;
+        if (adt->queue[pos]->pid == PCB->pid)
+        {
+            index= i;
+            break;
+        }
+    }
+
+    if (index == -1) return -1; // PCB not found
+    
+     for (int i = index; i < adt->size - 1; i++) {
+        int from = (adt->head + i + 1) % MAX_PROCESSES;
+        int to   = (adt->head + i) % MAX_PROCESSES;
+        adt->queue[to] = adt->queue[from];
+    }
+    adt->tail = (adt->tail - 1 + MAX_PROCESSES) % MAX_PROCESSES;
+    adt->size--;
+    return 0; // PCB not found
 }
+
+uint8_t getPCBQueueSize(PCBQueueADT adt){ return adt->size; }
+
+uint8_t isEmpty(PCBQueueADT adt) { return adt->size <= 0; }

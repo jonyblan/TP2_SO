@@ -8,7 +8,9 @@
 #include <processManager.h>
 #include <videoDriver.h>
 #include <nano.h>
-
+#include <scheduler.h>
+#include <time_and_rtc.h>
+#include <interrupts.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -19,8 +21,33 @@ extern uint8_t endOfKernel;
 
 static const uint64_t PageSize = 0x1000;
 
+void testProcessA() {
+	while (1) {
+		vdPrint("Process A running");
+		vdPrintChar('\n');
+		sleep(10);
+	}
+}
+
+void testProcessB() {
+	while (1) {
+		vdPrint("Process B running");
+		vdPrintChar('\n');
+		sleep(10);
+	}
+}
+void testProcessC() {
+	while (1) {
+		vdPrint("Process C running");
+		vdPrintChar('\n');
+		sleep(10);
+	}
+}
+
 static void *const sampleCodeModuleAddress = (void *)0x400000;
 static void *const sampleDataModuleAddress = (void *)0x500000;
+static int veces=0;
+
 
 typedef int (*EntryPoint)();
 
@@ -57,19 +84,19 @@ void *initializeKernelBinary()
 }
 
 int main()
-{
+{	
+	
 	load_idt();
 	
+	initScheduler(getStackBase());
+
+	char *argv[] = {0};
+	createFirstProcess((void*)testProcessA, 0, argv);
+	createProcess((void*)testProcessB, 1,0, argv);
+	createProcess((void*)testProcessC, 0,0, argv);
 	setTickFrequency(120);
-
-	if(initializeProcesses() == -1){
-		vdPrint("Processes failed to initialize");
-		vdPrintChar('\n');
-		return 1;
-	}
-
-
-	((EntryPoint)sampleCodeModuleAddress)();
-
+	_sti();
+	while (1){}
+	
 	return 0;
 }
