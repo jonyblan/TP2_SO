@@ -5,12 +5,8 @@
 #include <naiveConsole.h>
 #include <keyboardDriver.h>
 #include <idtLoader.h>
-#include <processManager.h>
-#include <videoDriver.h>
 #include <nano.h>
-#include <scheduler.h>
-#include <time_and_rtc.h>
-#include <interrupts.h>
+
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -46,8 +42,6 @@ void testProcessC() {
 
 static void *const sampleCodeModuleAddress = (void *)0x400000;
 static void *const sampleDataModuleAddress = (void *)0x500000;
-static int veces=0;
-
 
 typedef int (*EntryPoint)();
 
@@ -84,8 +78,7 @@ void *initializeKernelBinary()
 }
 
 int main()
-{	
-	
+{
 	load_idt();
 	
 	initScheduler(getStackBase());
@@ -94,8 +87,9 @@ int main()
 	//createFirstProcess((void*)sampleCodeModuleAddress, 0, argv);
 	createProcess((void*)testProcessA, 1, 2, argv);
 	setTickFrequency(120);
-	_sti();
-	while (1){}
-	
+
+
+	((EntryPoint)sampleCodeModuleAddress)();
+
 	return 0;
 }

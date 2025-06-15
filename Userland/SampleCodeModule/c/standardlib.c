@@ -391,6 +391,7 @@ void free(uint64_t* ptr){
 }
 
 pid_t createProcess(void* entryPoint){
+	printf("create process entrypoint: %s\n", (char*)entryPoint);
 	return SYSCALL(14, (uint64_t)entryPoint, 0, 0);
 }
 
