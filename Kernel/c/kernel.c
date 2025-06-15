@@ -21,9 +21,9 @@ extern uint8_t endOfKernel;
 
 static const uint64_t PageSize = 0x1000;
 
-void testProcessA() {
+void testProcessA(int x) {
 	while (1) {
-		vdPrint("Process A running");
+		vdPrintDec(x);
 		vdPrintChar('\n');
 		sleep(10);
 	}

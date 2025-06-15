@@ -5,6 +5,7 @@
 #include <PCBQueueADT.h>
 #include <videoDriver.h>
 #include <scheduler.h>
+#include <lib.h>
 
 extern void idle();
 
@@ -86,10 +87,22 @@ pid_t createProcess(void (*fn)(uint8_t, char **), int priority, int argc, char**
     new->argc = argc;
     new->argv = argv;
     new->entryPoint = launchProcess;
-    new->parent = NULL;
+    new->parent = &processes[getCurrentPID()];
     new->next = NULL;
+
+    char **args = malloc(sizeof(char*) * (argc+1));
+    for (uint8_t i = 0; i < argc; i++)
+    {
+        uint64_t len = strlen(argv[i]) + 1;
+        args[i] = malloc(len);
+        memcpy(args[i], argv[i], len);  
+    }
+    args[argc] = NULL; 
+    new->argv = args;
     //new->stackBase=malloc(PROCESS_STACK_SIZE);
     new->stackBase = (stackStart + new->pid * PROCESS_STACK_SIZE);
+
+
     
     prepareStack(new, new->stackBase, new->entryPoint);
     loadArguments(fn, argc, argv,new->stackBase);
@@ -101,6 +114,31 @@ pid_t createProcess(void (*fn)(uint8_t, char **), int priority, int argc, char**
     return new->pid;
 }
 
+int blockProcess(uint16_t pid) {
+    if (pid >= MAX_PROCESSES) {
+        return -1; // Invalid PID or process already terminated
+    }
+    processes[pid].state = BLOCKED;
+    if(getCurrentPID() == pid) {
+        yield(); // If the current process is blocked, yield to allow other processes to run
+    }
+    else {
+        // If not the current process, just change state
+        descheduleProcess(&processes[pid]);
+    }
+    return 0;
+}
+
+int unblockProcess(uint16_t pid) {
+    if (pid >= MAX_PROCESSES) {
+        return -1; // Invalid PID or process already terminated
+    }
+    if (processes[pid].state == BLOCKED) {
+        processes[pid].state = READY;
+        scheduleProcess(&processes[pid]);
+    }
+    return 0; // Process unblocked successfully
+}
 
 /* PCB* getNextProcess() {
     for (int priority = 0; priority < PRIORITY_LEVELS; priority++) {

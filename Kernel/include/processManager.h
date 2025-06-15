@@ -5,7 +5,7 @@
 #define PROCESS_STACK_SIZE 16384 // 16KiB
 #define PRIORITY_LEVELS 2
 #define DEFAULT_PRIORITY 50
-#define MAX_PROCESSES 128
+#define MAX_PROCESSES 256
 
 #include "../include/memoryManager.h"
 
