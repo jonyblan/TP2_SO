@@ -8,21 +8,13 @@
 
 extern void idle();
 
-static PCB processes[MAX_PROCESSES];
+PCB processes[MAX_PROCESSES];
 static PCBQueueADT terminatedProcessesQueue; //Cola de procesos esperando a que le hagan wait() (Si terminan, su PCB se marca como TERMINATED, por lo que se podria pisar el PCB)
 PCB* currentProcess;
 static uint8_t processCount= 1;
 static pid_t nextPID= 1;
 
 
-void testProcessC() {
-    while (1) {
-        vdPrint("Process C running");
-		vdPrintChar('\n');
-        sleep(100);
-    }
-    return;
-}
 
 void myExit(){
     uint16_t pid = getCurrentPID();
@@ -34,10 +26,6 @@ void launchProcess(void (*fn)(uint8_t, char **), uint8_t argc, char *argv[]) {
   myExit();
 }
 
-void idleTest() {
-    vdPrint("Idle!\n");
-    while(1);
-}
 
 void *stackStart= (void*) 0x1000000;
 
@@ -88,32 +76,25 @@ void createFirstProcess(void (*fn)(uint8_t, char **), int argc, char** argv){
 pid_t createProcess(void (*fn)(uint8_t, char **), int priority, int argc, char** argv){
     if (processCount>= MAX_PROCESSES) return -1;
     PCB* new=NULL;
-
-    for (size_t i = 0; i < MAX_PROCESSES; i++)
-    {
-       if (processes[i].state == TERMINATED ) {
-            new = &processes[i];
-            break;
-        }
-    }
+    int pid= nextPID++;
     
-    if (new == NULL) return -1;
-    new->pid = nextPID++;
+    new = &processes[pid];
+    new->pid = pid;
     new->priority = (priority >= PRIORITY_LEVELS) ? PRIORITY_LEVELS - 1 : priority;
     new->foreground = 1;
     new->waitingChildren = 0;
     new->argc = argc;
     new->argv = argv;
     new->entryPoint = launchProcess;
-    new->parent = currentProcess;
+    new->parent = NULL;
     new->next = NULL;
     //new->stackBase=malloc(PROCESS_STACK_SIZE);
     new->stackBase = (stackStart + new->pid * PROCESS_STACK_SIZE);
     
     prepareStack(new, new->stackBase, new->entryPoint);
     loadArguments(fn, argc, argv,new->stackBase);
-    scheduleProcess(new);
     new->state = READY;
+    scheduleProcess(new);
     
     processCount++;
     

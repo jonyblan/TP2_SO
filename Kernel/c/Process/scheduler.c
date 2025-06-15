@@ -36,34 +36,48 @@ void descheduleProcess(PCB *pcb) {
 }
 
 void *schedule(void *rsp) {
-  if (scheduler == NULL) {
-    vdPrint("Scheduler mal inicializado o sin proceso actual");
-    sleep(1);
-    return rsp;
-}
-  scheduler->currentRunningPCB->stackPointer = rsp;
-  if (scheduler->count[0] == 1) {
-    for (uint8_t i = 0; i < MAX_PRIO; i++) {
-      scheduler->count[i] = 0;
-    }
-  }
-  if (scheduler->currentRunningPCB->state == READY ) {
-    queueProcess(scheduler->schedule[scheduler->currentRunningPCB->priority], scheduler->currentRunningPCB);
-  }
+    if (!scheduler || !scheduler->currentRunningPCB)
+        return rsp;
 
-  for (int8_t i = MAX_PRIO - 1; i >= 0; i--) {
-    if (!isEmpty(scheduler->schedule[i]) && scheduler->count[i] <= (i * 5 + 1)) {
-      scheduler->currentRunningPCB = dequeueProcess(scheduler->schedule[i]);
-      (scheduler->count[i])++;
-      break;
+    PCB *old = scheduler->currentRunningPCB;
+    old->stackPointer = rsp;
+
+    // Guardar estado del proceso actual
+    if (old->state == RUNNING) {
+        old->state = READY;
+        queueProcess(scheduler->schedule[old->priority], old);
     }
-  }
- if (scheduler->currentRunningPCB == NULL) {
-    vdPrint("No hay proceso para correr");
-    sleep(100);
-    return NULL;
-}
-  return scheduler->currentRunningPCB->stackPointer;
+
+    PCB *next = NULL;
+
+    // Elegir el próximo proceso según presupuesto
+    for (int8_t i = MAX_PRIO - 1; i >= 0; i--) {
+        if (!isEmpty(scheduler->schedule[i]) && scheduler->count[i] <= (i * 5 + 1)) {
+            next = dequeueProcess(scheduler->schedule[i]);
+            scheduler->currentRunningPCB = next;
+            scheduler->currentRunningPCB->state = RUNNING;
+            scheduler->count[i]++;
+            return next->stackPointer;
+        }
+    }
+
+    // Si nadie fue elegido, reseteo y vuelvo a intentar
+    for (int i = 0; i < MAX_PRIO; i++)
+        scheduler->count[i] = 0;
+
+    // Segunda pasada después del reset
+    for (int8_t i = MAX_PRIO - 1; i >= 0; i--) {
+        if (!isEmpty(scheduler->schedule[i])) {
+            next = dequeueProcess(scheduler->schedule[i]);
+            scheduler->currentRunningPCB = next;
+            scheduler->currentRunningPCB->state = RUNNING;
+            scheduler->count[i]++;
+            return next->stackPointer;
+        }
+    }
+
+    // No hay procesos listos
+    return rsp;
 }
 
 uint16_t getCurrentPID(){return scheduler->currentRunningPCB->pid;}
