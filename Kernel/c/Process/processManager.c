@@ -90,9 +90,9 @@ pid_t createProcess(void (*fn)(uint8_t, char **), int priority, int argc, char**
     args[argc] = NULL; 
 
     new->argv = args;
-    
+
     new->pid = pid;
-    new->priority = (priority >= PRIORITY_LEVELS) ? PRIORITY_LEVELS - 1 : priority;
+    new->priority = (priority >= MAX_PRIO) ? MAX_PRIO - 1 : priority;
     new->foreground = 1;
     new->waitingChildren = 0;
     new->entryPoint = launchProcess;
@@ -101,7 +101,7 @@ pid_t createProcess(void (*fn)(uint8_t, char **), int priority, int argc, char**
 
     
     //new->stackBase=malloc(PROCESS_STACK_SIZE);
-    new->stackBase = (stackStart + new->pid * PROCESS_STACK_SIZE);
+    new->stackBase = (stackStart + (new->pid+1) * PROCESS_STACK_SIZE);
 
 
     

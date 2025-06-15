@@ -5,7 +5,12 @@
 #include <naiveConsole.h>
 #include <keyboardDriver.h>
 #include <idtLoader.h>
+#include <interrupts.h>
 #include <nano.h>
+#include <videoDriver.h>
+#include <scheduler.h>
+#include <time_and_rtc.h>
+#include <processManager.h>
 
 
 extern uint8_t text;
@@ -19,9 +24,11 @@ static const uint64_t PageSize = 0x1000;
 
 void testProcessA(int a,int b/*, int c, int d*/) {
 	while (1) {
-		vdPrintDec(a);vdPrintDec(b);//vdPrintDec(c);vdPrintDec(d);
+		vdPrintDec(a);
 		vdPrintChar('\n');
-		sleep(10);
+		vdPrintDec(b);//vdPrintDec(c);vdPrintDec(d);
+		vdPrintChar('\n');
+		sleep(50);
 	}
 }
 
@@ -82,14 +89,15 @@ int main()
 	load_idt();
 	
 	initScheduler(getStackBase());
-
-	char *argv[] = {"1","2"/*, "3", "4"*/};
+	char *argv[] = {"2","1"};
 	//createFirstProcess((void*)sampleCodeModuleAddress, 0, argv);
-	createProcess((void*)testProcessA, 1, 2, argv);
+	createProcess((void*)testProcessA, 1, 3, argv);
 	setTickFrequency(120);
-
-
-	((EntryPoint)sampleCodeModuleAddress)();
-
+	_sti();
+	while (1)
+	{
+		/* code */
+	}
+	
 	return 0;
 }

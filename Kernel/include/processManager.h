@@ -6,7 +6,7 @@
 #define DEFAULT_PRIORITY 50
 #define MAX_PROCESSES 256
 
-#include "../include/memoryManager.h"
+#include <memoryManager.h>
 
 typedef enum{
 	READY = 0,
@@ -64,13 +64,11 @@ extern PCB* currentProcess;
 
 pid_t createProcess(void (*fn)(uint8_t, char **), int priority, int argc, char** argv);
 
-int initializeProcesses();
 
 void terminateProcess();
 
-int killProcess(uint8_t pid);
+uint8_t killProcess(uint8_t pid);
 
-void quantumTick(); //funcion para manejar los quantums
 
 void showRunningProcesses();
 
