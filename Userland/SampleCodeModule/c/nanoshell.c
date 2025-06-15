@@ -8,7 +8,7 @@
 #define CMD_NAME_MAX_CHARS 100
 #define PROMPT "NanoShell $> "
 
-void startProcess();
+void startProcess(int argc, char* argv[]);
 	
 // add new command or useful here
 static char *instructions[] = {"help", "registers", "time", "eliminator", "echo", "clear", "change_font", "nano_song", "test_zero_division", \
@@ -252,7 +252,10 @@ void startNanoShell()
 
 		case MINI_PROCESS:
 			printf("string = %s\n", argv[0]);
-			pid = (pid_t)createProcess(&startProcess);
+			printf("process = %s\n", startProcess);
+			printf("a\n");
+			pid = (uint64_t)createProcess(startProcess);
+			printf("after createProcess: %d\n", pid);
 			break;
 
         case -1:

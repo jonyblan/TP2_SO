@@ -5,12 +5,8 @@
 #include <naiveConsole.h>
 #include <keyboardDriver.h>
 #include <idtLoader.h>
-#include <processManager.h>
-#include <videoDriver.h>
 #include <nano.h>
-#include <scheduler.h>
-#include <time_and_rtc.h>
-#include <interrupts.h>
+
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -21,33 +17,8 @@ extern uint8_t endOfKernel;
 
 static const uint64_t PageSize = 0x1000;
 
-void testProcessA(int x) {
-	while (1) {
-		vdPrintDec(x);
-		vdPrintChar('\n');
-		sleep(10);
-	}
-}
-
-void testProcessB() {
-	while (1) {
-		vdPrint("Process B running");
-		vdPrintChar('\n');
-		sleep(10);
-	}
-}
-void testProcessC() {
-	while (1) {
-		vdPrint("Process C running");
-		vdPrintChar('\n');
-		sleep(10);
-	}
-}
-
 static void *const sampleCodeModuleAddress = (void *)0x400000;
 static void *const sampleDataModuleAddress = (void *)0x500000;
-static int veces=0;
-
 
 typedef int (*EntryPoint)();
 
@@ -84,17 +55,13 @@ void *initializeKernelBinary()
 }
 
 int main()
-{	
-	
+{
 	load_idt();
 	
-	initScheduler(getStackBase());
-
-	char *argv[] = {0};
-	createFirstProcess((void*)sampleCodeModuleAddress, 0, argv);
 	setTickFrequency(120);
-	_sti();
-	while (1){}
-	
+
+
+	((EntryPoint)sampleCodeModuleAddress)();
+
 	return 0;
 }
