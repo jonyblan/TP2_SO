@@ -98,6 +98,7 @@
 uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t arg3)
 {
     uint64_t ret;
+	pid_t auxPid;
     switch (id)
     {
     case 3:;
@@ -148,18 +149,76 @@ uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t a
         uint64_t *arr = (uint64_t *)arg1;
         ret = getRegBackup(arr);
         break;
-    case 14:;
-		void* entryPoint = (void*)arg1;
-		ret = (uint64_t)createProcess(entryPoint, 0, 0,NULL);
+	case 12:;
+		uint64_t size = arg1;
+		ret = (uint64_t*)malloc(size);
 		break;
 	case 13:;
 		uint64_t *del = (uint64_t *)arg1;
 		free(del);
 		ret = 0;
 		break;
-	case 12:;
-		uint64_t size = arg1;
-		ret = (uint64_t*)malloc(size);
+    case 14:;
+		void* entryPoint = (void*)arg1;
+		uint64_t argc = (uint64_t)arg3; // por alguna razon argc queda en arg3 y no arg2
+		char** argv = {""};//(char**) arg3;
+		ret = (uint64_t)createProcess(entryPoint, DEFAULT_PRIORITY, argc, argv); //Cablie los parametros, (TO DO) Ponerlos bien
+		break;
+	case 15:;
+		auxPid = (pid_t)arg1;
+		ret = (uint64_t)getPriority(auxPid);	
+		break;
+	case 16:;
+		auxPid = (pid_t)arg1;
+		uint8_t newPriority = (uint8_t)arg3; // lo mismo que en el CASE 14
+		setPriority(auxPid, newPriority);
+		ret = 0;
+		break;
+	case 17:;
+		char* name17 = (char*)arg1;
+		uint8_t initialValue = (uint8_t)arg3;
+		ret = (uint64_t)sem_open(name17, initialValue);
+		break;
+	case 18:;
+		uint8_t postId = (uint8_t)arg1;
+		sem_post(postId);
+		ret = 0;
+		break;
+	case 19:;
+		uint8_t waitId = (uint8_t)arg1;
+		sem_wait(waitId);
+		ret = 0;
+		break;
+	case 20:;
+		char* name20 = (char*)arg1;
+		int* fds = (int*)arg2;
+		ret = pipe_open(name20, fds);
+		break;
+	case 21:;
+		int fd21 = (int)arg1;
+		char* buf21 = (char*)arg2;
+		uint64_t count21 = (uint64_t)arg3;
+		ret = pipe_write(fd21, buf21, count21);
+		break;
+	case 22:;
+		int fd22 = (int)arg1;
+		char* buf22 = (char*)arg2;
+		uint64_t count22 = (uint64_t)arg3;
+		ret = pipe_read(fd22, buf22, count22);
+		break;
+	case 23:;
+		int fd23 = (int)arg1;
+		pipe_close(fd23);
+		ret = 0;
+		break;
+	case 24:;
+		pid_t pid = (pid_t) arg1;
+		killProcess(pid);
+		ret = 0;
+		break;
+	case 25:;
+		pid_t pid25 = (pid_t) arg1;
+		ret = 0;
 		break;
     case 33:;
         nanoFace();

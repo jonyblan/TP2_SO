@@ -36,48 +36,51 @@ void descheduleProcess(PCB *pcb) {
 }
 
 void *schedule(void *rsp) {
-  if (!scheduler || !scheduler->currentRunningPCB)
-    return rsp;
+    if (!scheduler || !scheduler->currentRunningPCB)
+        return rsp;
 
     PCB *old = scheduler->currentRunningPCB;
     old->stackPointer = rsp;
-    
+
     // Guardar estado del proceso actual
     if (old->state == RUNNING) {
-      old->state = READY;
-      queueProcess(scheduler->schedule[old->priority], old);
+        old->state = READY;
+        queueProcess(scheduler->schedule[old->priority], old);
     }
-    
+
     PCB *next = NULL;
-    
+
     // Elegir el próximo proceso según presupuesto
     for (int8_t i = MAX_PRIO - 1; i >= 0; i--) {
-      if (!isEmpty(scheduler->schedule[i]) && scheduler->count[i] <= (i * 5 + 1)) {
-        next = dequeueProcess(scheduler->schedule[i]);
-        scheduler->currentRunningPCB = next;
-        scheduler->currentRunningPCB->state = RUNNING;
-        (scheduler->count[i])++;
-        return next->stackPointer;
-      }
+        if (!isEmpty(scheduler->schedule[i]) && scheduler->count[i] <= (i * 5 + 1)) {
+            next = dequeueProcess(scheduler->schedule[i]);
+            scheduler->currentRunningPCB = next;
+            scheduler->currentRunningPCB->state = RUNNING;
+            scheduler->count[i]++;
+            return next->stackPointer;
+        }
     }
-    
-  // Si nadie fue elegido, reseteo y vuelvo a intentar
-  for (int i = 0; i < MAX_PRIO; i++)
-      scheduler->count[i] = 0;
 
-  // Segunda pasada después del reset
-  for (int8_t i = MAX_PRIO - 1; i >= 0; i--) {
-      if (!isEmpty(scheduler->schedule[i])) {
-          next = dequeueProcess(scheduler->schedule[i]);
-          scheduler->currentRunningPCB = next;
-          scheduler->currentRunningPCB->state = RUNNING;
-          scheduler->count[i]++;
-          return next->stackPointer;
-      }
-  }
+    // Si nadie fue elegido, reseteo y vuelvo a intentar
+    for (int i = 0; i < MAX_PRIO; i++)
+        scheduler->count[i] = 0;
 
-  // No hay procesos listos
-  return rsp;
+    // Segunda pasada después del reset
+    for (int8_t i = MAX_PRIO - 1; i >= 0; i--) {
+        if (!isEmpty(scheduler->schedule[i])) {
+            next = dequeueProcess(scheduler->schedule[i]);
+            scheduler->currentRunningPCB = next;
+            scheduler->currentRunningPCB->state = RUNNING;
+            scheduler->count[i]++;
+            return next->stackPointer;
+        }
+    }
+
+    // No hay procesos listos
+    return rsp;
 }
 
 uint16_t getCurrentPID(){return scheduler->currentRunningPCB->pid;}
+PCB* getCurrentProcess(){return scheduler->currentRunningPCB;}
+void blockProcess(PCB* process){process->state = BLOCKED;}
+void unblockProcess(PCB* process){process->state = READY;}

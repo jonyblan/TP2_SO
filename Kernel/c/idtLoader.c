@@ -32,6 +32,7 @@ void load_idt()
   // Solo interrupcion timer tick y keyboard interrupt habilitadas
   picMasterMask(0xFC);
   picSlaveMask(0xFF);
+
 }
 
 static void setup_IDT_entry(int index, uint64_t offset)

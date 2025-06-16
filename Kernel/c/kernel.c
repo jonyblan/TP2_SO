@@ -5,13 +5,13 @@
 #include <naiveConsole.h>
 #include <keyboardDriver.h>
 #include <idtLoader.h>
-#include <interrupts.h>
-#include <nano.h>
+#include <processManager.h>
 #include <videoDriver.h>
+#include <nano.h>
 #include <scheduler.h>
 #include <time_and_rtc.h>
-#include <processManager.h>
-
+#include <interrupts.h>
+#include <memoryManager.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -22,13 +22,11 @@ extern uint8_t endOfKernel;
 
 static const uint64_t PageSize = 0x1000;
 
-void testProcessA(int a,int b/*, int c, int d*/) {
+void testProcessA(int x) {
 	while (1) {
-		vdPrintDec(a);
+		vdPrintDec(x);
 		vdPrintChar('\n');
-		vdPrintDec(b);//vdPrintDec(c);vdPrintDec(d);
-		vdPrintChar('\n');
-		sleep(50);
+		sleep(10);
 	}
 }
 
@@ -49,6 +47,8 @@ void testProcessC() {
 
 static void *const sampleCodeModuleAddress = (void *)0x400000;
 static void *const sampleDataModuleAddress = (void *)0x500000;
+static int veces=0;
+
 
 typedef int (*EntryPoint)();
 
@@ -80,24 +80,22 @@ void *initializeKernelBinary()
 	loadModules(&endOfKernelBinary, moduleAddresses);
 
 	clearBSS(&bss, &endOfKernel - &bss);
+	init_heap();
 
 	return getStackBase();
 }
 
 int main()
-{
+{	
+	
 	load_idt();
 	
 	initScheduler(getStackBase());
-	char *argv[] = {"2","1"};
-	//createFirstProcess((void*)sampleCodeModuleAddress, 0, argv);
-	createProcess((void*)testProcessA, 1, 3, argv);
+	char *argv[] = {0};
+	createFirstProcess((void*)sampleCodeModuleAddress, 0, argv);
 	setTickFrequency(120);
 	_sti();
-	while (1)
-	{
-		/* code */
-	}
+	while (1){}
 	
 	return 0;
 }

@@ -15,7 +15,7 @@ uint64_t getNextToRead(char *c)
     return SYSCALL(3, 1, 1, c);
 }
 
-static void unsigned_num_to_str(uint32_t num, uint32_t start, char *buff)
+void unsigned_num_to_str(uint32_t num, uint32_t start, char *buff)
 {
 
     uint32_t i = start;
@@ -55,7 +55,7 @@ static void signed_num_to_str(int32_t num, char *buff)
     unsigned_num_to_str(num, i, buff);
 }
 
-static uint32_t unsigned_str_to_num(uint64_t *it, uint64_t buff_length, char *buff)
+uint32_t unsigned_str_to_num(uint64_t *it, uint64_t buff_length, char *buff)
 {
     uint32_t num = 0;
     uint64_t i = *it;
@@ -318,6 +318,15 @@ uint64_t scanf(const char *fmt, ...)
     return count_read;
 }
 
+char *strchr(const char *str, int c) {
+    while (*str) {
+        if (*str == (char)c)
+            return (char *)str;  // Cast away const to match standard strchr signature
+        str++;
+    }
+    return NULL;
+}
+
 uint64_t
 putChar(uint64_t character)
 {
@@ -390,9 +399,52 @@ void free(uint64_t* ptr){
 	SYSCALL(13, ptr, 0, 0);
 }
 
-pid_t createProcess(void* entryPoint){
-	printf("create process entrypoint: %s\n", (char*)entryPoint);
-	return SYSCALL(14, (uint64_t)entryPoint, 0, 0);
+pid_t createProcess(void* entryPoint, uint64_t argc, char* argv[]){
+	return SYSCALL(14, (uint64_t) entryPoint, argc, argv);
+}
+
+int getPriority(pid_t pid){
+	return SYSCALL(15, pid, 0, 0);
+}
+
+void setPriority(pid_t pid, int newPriority){
+	SYSCALL(16, pid, newPriority, 0);
+}
+
+uint8_t sem_open(const char* name, uint8_t initial_value){
+	return SYSCALL(17, name, (uint64_t)initial_value, 0);
+}
+
+void sem_post(uint8_t id){
+	SYSCALL(18, (uint64_t)id, 0, 0);
+}
+
+void sem_wait(uint8_t id){
+	SYSCALL(19, (uint64_t)id, 0, 0);
+}
+
+uint8_t pipe_open(const char* name, int fds[2]){  // fds[0] = read end, fds[1] = write end
+	return (uint8_t)SYSCALL(20, name, fds, 0);
+}
+
+uint64_t pipe_write(int fd, const char* buf, uint64_t count){
+	return (uint64_t)SYSCALL(21, fd, buf, count);
+}
+
+uint64_t pipe_read(int fd, char* buf, uint64_t count){
+	return (uint64_t)SYSCALL(22, fd, buf, count);
+}
+
+void pipe_close(int fd){
+	SYSCALL(23, fd, 0, 0);
+}
+
+void killProcess(pid_t pid){
+	SYSCALL(24, pid, 0, 0);
+}
+
+void blockProcess(pid_t pid){
+	SYSCALL(25, pid, 0, 0);
 }
 
 typedef struct MM_rq {

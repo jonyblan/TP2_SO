@@ -3,7 +3,7 @@
 #include <defs.h>
 #include <interrupts.h>
 #include <stddef.h>
-#include "memoryManager.h"
+#include <memoryManager.h>
 
 #define HEAP_START 0x1000000
 #define HEAP_SIZE  0x100000  // 1 MiB
@@ -26,13 +26,7 @@ void init_heap() {
     head->free = 1;
 }
 
-uint8_t heapStarted = 0;
-
 void* malloc(size_t size) {
-    if (!heapStarted) {
-        init_heap();
-        heapStarted = 1;
-    }
 
     Block* current = head;
     while (current != NULL) {
@@ -72,4 +66,3 @@ void free(void* ptr) {
         block->next = block->next->next;
     }
 }
-

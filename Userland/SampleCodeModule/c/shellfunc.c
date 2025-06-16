@@ -100,7 +100,7 @@ void testInvalidOpcode()
 #define SIXTEENTHN 18
 
 void nanoAnthem(){
-    syscall(9,SIXTEENTHN,0,C4);
+    /*syscall(9,SIXTEENTHN,0,C4);
     syscall(9,SIXTEENTHN,0,F4);
     syscall(9,EIGHTHN,0,E4);
     syscall(9,EIGHTHN,0,F4);
@@ -208,5 +208,5 @@ void nanoAnthem(){
     syscall(9,SIXTEENTHN,0,D5);
     syscall(9,EIGHTHN,0,F5); 
     syscall(9,SIXTEENTHN,0,D5);
-    syscall(9,QUARTERN,0,C5); 
+    syscall(9,QUARTERN,0,C5); */
 }
