@@ -32,7 +32,7 @@ typedef enum
     CAT,
     WC,
     FILTER,
-
+	PHYLO,
 	// leave this at the end
 	INSTRUCTION_COUNT,
 } INSTRUCTION;

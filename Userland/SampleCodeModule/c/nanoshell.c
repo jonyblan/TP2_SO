@@ -42,7 +42,7 @@ void testFunc();
 static char *instructions[] = {"help", "registers", "time", "eliminator", "echo", "clear", "change_font", "nano_song", "test_zero_division", \
 "test_invalid_opcode", "test_malloc", "man", "todo", "functions", "mini_process", "test_priority",\
 /*useful*/ "malloc", "realloc", "calloc", "free", "createProcess", "getPriority", "setPriority", 
-"mem", "cat", "wc", "filter",0,};
+"mem", "cat", "wc", "filter","phylo",0,};
 
 // add new command here
 static char *help_text = "Here's a list of all available commands:\n\
@@ -65,7 +65,8 @@ static char *help_text = "Here's a list of all available commands:\n\
 "- mem --> shows the state of physicall memory\n"
 "- cat --> copy stdin into stdout\n"
 "- wc  --> counts lines of stdin\n"
-"- filter --> copy stdying filtering by vocals\n";
+"- filter --> copy stdying filtering by vocals\n"
+"- phylo --> starts the phylo game\n";
 
 // add new command or useful here
 static char *man[] = {
@@ -131,7 +132,7 @@ description: sets a new priority for the sent pid. Higher numbers mean higher pr
 "cat: Imprime stdin en stdout. Usa la syscall 41\n",
 "wc: Cuenta las lineas de stdin. Usa la syscall 42\n",
 "filter: Copia stdin a stdout filtrando vocales. Usa la syscall 43\n",
-
+"phylo: Inicia el juego de los filosofos. Usa la syscall 44\n",
 
 };
 
