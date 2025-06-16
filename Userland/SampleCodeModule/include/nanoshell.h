@@ -28,6 +28,10 @@ typedef enum
 	CREATE_PROCESS,
 	GET_PRIORITY,
 	SET_PRIORITY,
+	MEM,
+    CAT,
+    WC,
+    FILTER,
 
 	// leave this at the end
 	INSTRUCTION_COUNT,

@@ -2,6 +2,7 @@
 #define STANDARD_LIB_H
 
 #include <stdint.h>
+#include "memstatus.h"
 
 typedef uint64_t pid_t;
 

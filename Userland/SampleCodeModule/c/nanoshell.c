@@ -3,10 +3,37 @@
 #include <videolib.h>
 #include <processes.h>
 #include <stddef.h>
+#include "memstatus.h"
 
 #define CMD_MAX_CHARS 1000
 #define CMD_NAME_MAX_CHARS 100
 #define PROMPT "NanoShell $> "
+
+#ifndef EOF
+#define EOF (-1)
+#endif
+
+/* Reutilizamos tu getc / putChar */
+static inline int getchar_nano(void) {          // reemplazo de getchar()
+    return (int)(unsigned char)getc();          // getc() ya está en standardlib
+}
+static inline void putchar_nano(int c) {        // reemplazo de putchar()
+    putChar((uint64_t)c);                       // putChar() ya está
+}
+
+/* strchr minimalista: devuelve ptr al primer match o NULL  */
+static char *strchr_nano(const char *s, int ch) {
+    while (*s) {
+        if (*s == (char)ch) return (char *)s;
+        s++;
+    }
+    return NULL;
+}
+
+/* Para que switch pueda compilar */
+#define getchar  getchar_nano
+#define putchar  putchar_nano
+#define strchr   strchr_nano
 
 void startProcess();
 void testFunc();
@@ -14,7 +41,8 @@ void testFunc();
 // add new command or useful here
 static char *instructions[] = {"help", "registers", "time", "eliminator", "echo", "clear", "change_font", "nano_song", "test_zero_division", \
 "test_invalid_opcode", "test_malloc", "man", "todo", "functions", "mini_process", "test_priority",\
-/*useful*/ "malloc", "realloc", "calloc", "free", "createProcess", "getPriority", "setPriority", 0,};
+/*useful*/ "malloc", "realloc", "calloc", "free", "createProcess", "getPriority", "setPriority", 
+"mem", "cat", "wc", "filter",0,};
 
 // add new command here
 static char *help_text = "Here's a list of all available commands:\n\
@@ -33,7 +61,11 @@ static char *help_text = "Here's a list of all available commands:\n\
 - todo --> displays a random thing that has to be done\n\
 - functions --> displays every page inside the manual\n\
 - mini_process --> creates a new process according to simpleProcess.c\n\
-- test_priority --> test that the priority system is working correctly\n";
+- test_priority --> test that the priority system is working correctly\n"
+"- mem --> shows the state of physicall memory\n"
+"- cat --> copy stdin into stdout\n"
+"- wc  --> counts lines of stdin\n"
+"- filter --> copy stdying filtering by vocals\n";
 
 // add new command or useful here
 static char *man[] = {
@@ -81,7 +113,7 @@ return value: returns a pointer to the allocated memory or NULL in case of error
 "free:\n\
 use: void free(void* pnt)\n\
 description: free frees the memory that was previously allocated by pnt via malloc() or calloc(). Nothing happens if pnt is NULL\n\
-return value: free doesnt return anything\”",
+return value: free doesnt return anything\n",
 "createProcess:\n\
 use:\n\
 description: \n\
@@ -94,7 +126,13 @@ return value: returns the priority of the sent pid. Returns -1 if pid is out of 
 "setPriority:\n\
 use: setPriority(pid_t pid, int newPriority)\n\
 description: sets a new priority for the sent pid. Higher numbers mean higher priorities.\n\
-"
+",
+"mem: Imprime memoria total, usada y libre usando la syscall 40\n",
+"cat: Imprime stdin en stdout. Usa la syscall 41\n",
+"wc: Cuenta las lineas de stdin. Usa la syscall 42\n",
+"filter: Copia stdin a stdout filtrando vocales. Usa la syscall 43\n",
+
+
 };
 
 // add new command or useful here
@@ -285,7 +323,45 @@ void startNanoShell()
 			pid3 = (pid_t)createProcess(&testFunc, 3, argv);
 			printf("priorities: %d, %d, %d\n\n", pid1, pid2, pid3);
 			break;
-			
+
+        
+		case MEM: {
+        MemStatus ms = {0};               // declara la misma struct en Userland/include
+        syscall(40, &ms, 0, 0);           // 40 = Nº de syscall que definas en el kernel
+        printf("Total: %u KB  Usada: %u KB  Libre: %u KB\n",
+           ms.total/1024, ms.used/1024, ms.free/1024);
+    break;
+}
+
+
+    case CAT: {
+    int c;
+    /* leemos hasta Enter (simple) */
+    while ((c = getc()) != '\n')      // getc() bloquea hasta que llega algo
+        putChar(c);
+    putChar('\n');
+    break;
+}
+
+case WC: {
+    int c, lines = 0;
+    while ((c = getc()) != '\n')      // mismo criterio
+        if (c == '\n') lines++;
+    /* Contamos el Enter que terminó el bucle: */
+    lines++;
+    printf("%d\n", lines);
+    break;
+}
+
+case FILTER: {
+    int c;
+    while ((c = getc()) != '\n') {
+        if (!strchr("aeiouAEIOU", c))
+            putChar(c);
+    }
+    putChar('\n');
+    break;
+}
 
         case -1:
             printf("Command not found: '%s'", cmdBuff);
