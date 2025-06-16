@@ -98,6 +98,7 @@
 uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t arg3)
 {
     uint64_t ret;
+	pid_t auxPid;
     switch (id)
     {
     case 3:;
@@ -148,18 +149,31 @@ uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t a
         uint64_t *arr = (uint64_t *)arg1;
         ret = getRegBackup(arr);
         break;
-    case 14:;
-		void* entryPoint = (void*)arg1;
-		ret = (void*)createProcess(entryPoint);
+	case 12:;
+		uint64_t size = arg1;
+		ret = (uint64_t*)malloc(size);
 		break;
 	case 13:;
 		uint64_t *del = (uint64_t *)arg1;
 		free(del);
 		ret = 0;
 		break;
-	case 12:;
-		uint64_t size = arg1;
-		ret = (uint64_t*)malloc(size);
+    case 14:;
+		void* entryPoint = (void*)arg1;
+		uint64_t argc = (uint64_t)arg2;
+		char** argv = {""};//(char**) arg3;
+		ret = (uint64_t)createProcess(entryPoint, DEFAULT_PRIORITY, argc, argv); //Cablie los parametros, (TO DO) Ponerlos bien
+		ret = (uint64_t)arg2;
+		break;
+	case 15:;
+		auxPid = (pid_t)arg1;
+		int priority = getPriority(auxPid);
+		ret = priority;	
+		break;
+	case 16:;
+		auxPid = (pid_t)arg1;
+		int newPriority = (int)arg2;
+		setPriority(auxPid, newPriority);
 		break;
     case 33:;
         nanoFace();

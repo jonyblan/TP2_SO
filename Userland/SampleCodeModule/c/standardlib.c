@@ -390,9 +390,16 @@ void free(uint64_t* ptr){
 	SYSCALL(13, ptr, 0, 0);
 }
 
-pid_t createProcess(void* entryPoint){
-	printf("create process entrypoint: %s\n", (char*)entryPoint);
-	return SYSCALL(14, (uint64_t)entryPoint, 0, 0);
+pid_t createProcess(void* entryPoint, uint64_t argc, char* argv[]){
+	return SYSCALL(14, (uint64_t) entryPoint, argc, argv);
+}
+
+int getPriority(pid_t pid){
+	return SYSCALL(15, pid, 0, 0);
+}
+
+void setPriority(pid_t pid, int newPriority){
+	SYSCALL(16, pid, newPriority, 0);
 }
 
 typedef struct MM_rq {

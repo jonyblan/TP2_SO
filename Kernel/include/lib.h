@@ -11,4 +11,7 @@ char *cpuVendor(char *result);
 uint8_t inb(uint8_t a);
 void outb(uint8_t a, uint8_t b);
 
+uint64_t strlen(const char *string);
+int strcmp(const char* s1, const char* s2);
+
 #endif

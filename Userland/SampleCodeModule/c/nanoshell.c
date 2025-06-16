@@ -1,19 +1,20 @@
 #include <nanoshell.h>
 #include <standardlib.h>
 #include <videolib.h>
-#include <simpleProcess.h>
+#include <processes.h>
 #include <stddef.h>
 
 #define CMD_MAX_CHARS 1000
 #define CMD_NAME_MAX_CHARS 100
 #define PROMPT "NanoShell $> "
 
-void startProcess(int argc, char* argv[]);
+void startProcess();
+void testFunc();
 	
 // add new command or useful here
 static char *instructions[] = {"help", "registers", "time", "eliminator", "echo", "clear", "change_font", "nano_song", "test_zero_division", \
-"test_invalid_opcode", "test_malloc", "man", "todo", "functions", "mini_process",\
-/*useful*/ "malloc", "realloc", "calloc", "free", "createProcess", 0,};
+"test_invalid_opcode", "test_malloc", "man", "todo", "functions", "mini_process", "test_priority",\
+/*useful*/ "malloc", "realloc", "calloc", "free", "createProcess", "getPriority", "setPriority", 0,};
 
 // add new command here
 static char *help_text = "Here's a list of all available commands:\n\
@@ -31,7 +32,8 @@ static char *help_text = "Here's a list of all available commands:\n\
 - man [command] --> displays the manual for the given command\n\
 - todo --> displays a random thing that has to be done\n\
 - functions --> displays every page inside the manual\n\
-- mini_process --> creates a new process according to simpleProcess.c\n";
+- mini_process --> creates a new process according to simpleProcess.c\n\
+- test_priority --> test that the priority system is working correctly\n";
 
 // add new command or useful here
 static char *man[] = {
@@ -58,6 +60,9 @@ inside man will have \"TODO: Not implemented\"",
 "todo: don't know what to do? run this command and you'll be given a random task in the TODO list\n",
 "functions: Displays every page inside the manual. Useful for testing and to play around\n",
 "mini_process: Creates a new process according to simpleProcess.c\n",
+"test_priority: There will be 2 processes created, process 1 has priority 1 and process 2 has priority 7 (max).\n\
+they will be created in that order. The 2 are in a file in Userland called priorityTest.c\n\
+check what happens to adress if the priority system is working.\n",
 
 // Useful
 
@@ -76,15 +81,27 @@ return value: returns a pointer to the allocated memory or NULL in case of error
 "free:\n\
 use: void free(void* pnt)\n\
 description: free frees the memory that was previously allocated by pnt via malloc() or calloc(). Nothing happens if pnt is NULL\n\
-return value: free doesnt return anything",
-"createProcess:\n"
+return value: free doesnt return anything\”",
+"createProcess:\n\
+use:\n\
+description: \n\
+return value: \n",
+
+"getPriority:\n\
+use: getPriority(pid_t pid)\n\
+description: gets the priority of the sent pid\n\
+return value: returns the priority of the sent pid. Returns -1 if pid is out of bounds. Runtime error if no process exists with that pid\n",
+"setPriority:\n\
+use: setPriority(pid_t pid, int newPriority)\n\
+description: sets a new priority for the sent pid. Higher numbers mean higher priorities.\n\
+"
 };
 
 // add new command or useful here
 static char *functions = "\
 Commands: help, registers, time, eliminator, echo, clear, change_font, nano_song, test_zero_division\n\
-test_invalid_opcode, test_malloc, man, todo, functions, mini_process\n\n\n\
-Useful: malloc, realloc, calloc, free\n";
+test_invalid_opcode, test_malloc, man, todo, functions, mini_process, test_priority\n\n\n\
+Useful: malloc, realloc, calloc, free, getPriority, setPriority\n";
 
 // add new command or useful here
 static char *todo[] = {
@@ -119,6 +136,8 @@ make it return a random todo",
 "Not implemented",
 // mini_process
 "Make easier to understand",
+// test_priority
+"",
 
 // Useful
 
@@ -132,6 +151,10 @@ make it return a random todo",
 "",
 // createProcess
 "Not implemented",
+// getPriority
+"",
+// setPriority
+"",
 };
 
 static uint64_t readCommand(char *buff);
@@ -155,8 +178,8 @@ void startNanoShell()
         int i = 0;
 		int j = 0;
 
-		char* argv[] = {"startProcess\0", NULL};
-		int argc = 2;
+
+		char* argv[] = {""};
 
 		pid_t pid;
 
@@ -251,12 +274,18 @@ void startNanoShell()
 			break;
 
 		case MINI_PROCESS:
-			printf("string = %s\n", argv[0]);
-			printf("process = %s\n", startProcess);
-			printf("a\n");
-			pid = (uint64_t)createProcess(startProcess);
-			printf("after createProcess: %d\n", pid);
+			pid = (pid_t)createProcess(&startProcess, 1, argv);
 			break;
+		
+		case TEST_PRIORITY:
+			;
+			pid_t pid1, pid2, pid3;
+			pid1 = (pid_t)createProcess(&testFunc, 1, argv);
+			pid2 = (pid_t)createProcess(&testFunc, 2, argv);
+			pid3 = (pid_t)createProcess(&testFunc, 3, argv);
+			printf("priorities: %d, %d, %d\n\n", pid1, pid2, pid3);
+			break;
+			
 
         case -1:
             printf("Command not found: '%s'", cmdBuff);

@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <PCBQueueADT.h>
 #include <processManager.h>
-#define MAX_PRIO 3
+#define MAX_PRIO 8
 
 
 typedef struct schedulerStruct {
@@ -19,5 +19,6 @@ void scheduleProcess(PCB *pcb);
 void descheduleProcess(PCB *pcb);
 void *schedule(void *rsp);
 uint16_t getCurrentPID();
+PCB* getCurrentProcess();
 
 #endif

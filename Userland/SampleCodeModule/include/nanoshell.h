@@ -19,12 +19,15 @@ typedef enum
 	TODO,
 	FUNCTIONS,
 	MINI_PROCESS,
+	TEST_PRIORITY,
 	// useful
 	MALLOC,
 	REALLOC,
 	CALLOC,
 	FREE,
 	CREATE_PROCESS,
+	GET_PRIORITY,
+	SET_PRIORITY,
 
 	// leave this at the end
 	INSTRUCTION_COUNT,

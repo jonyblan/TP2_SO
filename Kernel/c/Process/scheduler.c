@@ -81,3 +81,4 @@ void *schedule(void *rsp) {
 }
 
 uint16_t getCurrentPID(){return scheduler->currentRunningPCB->pid;}
+PCB* getCurrentProcess(){return scheduler->currentRunningPCB;}

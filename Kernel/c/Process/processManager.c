@@ -12,10 +12,22 @@ extern void idle();
 PCB processes[MAX_PROCESSES];
 static PCBQueueADT terminatedProcessesQueue; //Cola de procesos esperando a que le hagan wait() (Si terminan, su PCB se marca como TERMINATED, por lo que se podria pisar el PCB)
 PCB* currentProcess;
-static uint16_t processCount= 1;
+static uint8_t processCount= 1;
 static pid_t nextPID= 1;
 
+int getPriority(pid_t pid){
+	if(pid < 0 || pid > MAX_PROCESSES){
+		return -1;
+	}
+	return processes[pid].priority;
+}
 
+void setPriority(pid_t pid, int newPriority){
+	if(pid < 0 || pid > MAX_PROCESSES){
+		return ;
+	}
+	processes[pid].priority = (newPriority >= PRIORITY_LEVELS) ? PRIORITY_LEVELS - 1 : newPriority;
+}
 
 void myExit(){
     uint16_t pid = getCurrentPID();
@@ -80,6 +92,16 @@ pid_t createProcess(void (*fn)(uint8_t, char **), int priority, int argc, char**
     int pid= nextPID++;
     
     new = &processes[pid];
+    new->pid = pid;
+    new->priority = (priority >= PRIORITY_LEVELS) ? PRIORITY_LEVELS - 1 : priority;
+    new->foreground = 1;
+    new->waitingChildren = 0;
+    new->argc = argc;
+    new->argv = argv;
+    new->entryPoint = launchProcess;
+    new->parent = &processes[getCurrentPID()];
+    new->next = NULL;
+
     char **args = malloc(sizeof(char*) * (argc+1));
     for (uint8_t i = 0; i < argc; i++)
     {
@@ -88,18 +110,7 @@ pid_t createProcess(void (*fn)(uint8_t, char **), int priority, int argc, char**
         memcpy(args[i], argv[i], len);  
     }
     args[argc] = NULL; 
-
     new->argv = args;
-    
-    new->pid = pid;
-    new->priority = (priority >= PRIORITY_LEVELS) ? PRIORITY_LEVELS - 1 : priority;
-    new->foreground = 1;
-    new->waitingChildren = 0;
-    new->entryPoint = launchProcess;
-    new->parent = &processes[getCurrentPID()];
-    new->next = NULL;
-
-    
     //new->stackBase=malloc(PROCESS_STACK_SIZE);
     new->stackBase = (stackStart + new->pid * PROCESS_STACK_SIZE);
 
@@ -160,26 +171,24 @@ int unblockProcess(uint16_t pid) {
 } */
 
 
-uint8_t killProcess(uint8_t pid){
-
-    if (processes[pid].state == TERMINATED) return -1;
-    
-    processes[pid].state = TERMINATED;
-    processCount--;
-    char **argv = processes[pid].argv;
-    while (*argv) {
-        free(*argv);
-        argv++;
-    }
-    free(processes[pid].argv);
-    if (getCurrentPID() == pid)
+int killProcess(uint8_t pid){
+    for (size_t i = 0; i < MAX_PROCESSES; i++)
     {
-        yield();
-    } else{
-        descheduleProcess(&processes[pid]);
+        if (processes[i].pid == pid)
+        {
+            if (processes[i].state == TERMINATED) return -1;
+            
+            processes[i].state = TERMINATED;
+            queueProcess(terminatedProcessesQueue,&processes[i]);
+            processCount--;
+            if (getCurrentPID() == pid)
+            {
+                yield();
+            }
+            return 0;
+        }
     }
-    return 0;
-        
+    return -1;
 }
 
 void yield(){/* int_20();*/ return; }
