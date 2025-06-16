@@ -279,13 +279,17 @@ void startNanoShell()
 		
 		case TEST_PRIORITY:
 			;
-			pid_t pid1, pid2, pid3;
+			pid_t pid1, pid2;
 			pid1 = (pid_t)createProcess(&testFunc, 1, argv);
-			pid2 = (pid_t)createProcess(&testFunc, 2, argv);
-			pid3 = (pid_t)createProcess(&testFunc, 3, argv);
-			printf("priorities: %d, %d, %d\n\n", pid1, pid2, pid3);
+			printf("priorities: %d: %d, ", pid1, getPriority(pid1));
+			setPriority(pid1, 1);
+			printf("priorities: %d: %d, ", pid1, getPriority(pid1));
 			break;
-			
+		
+		//case TEST_SEMAPHORE:;
+			//pid_t bloqueado, liberador;
+			//bloqueado = (pid_t)createProcess(&bloqueadoFunc, 1, argv);
+			//liberador = (pid_t)createProcess(&liberadorFunc, 1, argv);
 
         case -1:
             printf("Command not found: '%s'", cmdBuff);

@@ -77,7 +77,7 @@ void showRunningProcesses();
 
 void createFirstProcess(void (*fn)(uint8_t, char **), int argc, char** argv);
 
-void setPriority(pid_t pid, int newPriority);
+void setPriority(pid_t pid, uint8_t newPriority);
 
 int getPriority(pid_t pid);
 

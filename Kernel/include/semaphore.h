@@ -1,13 +1,17 @@
 #ifndef SEMAPHORE_H
 #define SEMAPHORE_H
 
-//#include "PCBQueueADT.h"
-/*
+#include "PCBQueueADT.h"
+
 #define MAX_SEMAPHORES 32
+#define MAX_NAME_LEN 32
+
+void _cli(void);
+void _sti(void);
 
 typedef struct {
     int value;
-    PCBQueueCDT* waiters;
+    PCBQueueADT waiters;
 } Semaphore;
 
 typedef struct {
@@ -16,9 +20,9 @@ typedef struct {
     Semaphore sem;
 } NamedSemaphore;
 
-int sem_open(const char* name, int create, int initial_value);
-void sem_wait(int id);
-void sem_post(int id);
-int sem_destroy(int id);
-*/
+uint8_t sem_open(const char* name, uint8_t initial_value);
+void sem_wait(uint8_t id);
+void sem_post(uint8_t id);
+void sem_destroy(uint8_t id);
+
 #endif

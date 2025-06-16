@@ -160,10 +160,9 @@ uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t a
 		break;
     case 14:;
 		void* entryPoint = (void*)arg1;
-		uint64_t argc = (uint64_t)arg2;
+		uint64_t argc = (uint64_t)arg3; // por alguna razon argc queda en arg3 y no arg2
 		char** argv = {""};//(char**) arg3;
 		ret = (uint64_t)createProcess(entryPoint, DEFAULT_PRIORITY, argc, argv); //Cablie los parametros, (TO DO) Ponerlos bien
-		ret = (uint64_t)arg2;
 		break;
 	case 15:;
 		auxPid = (pid_t)arg1;
@@ -172,8 +171,21 @@ uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t a
 		break;
 	case 16:;
 		auxPid = (pid_t)arg1;
-		int newPriority = (int)arg2;
+		uint8_t newPriority = (uint8_t)arg3; // lo mismo que en el CASE 14
 		setPriority(auxPid, newPriority);
+		break;
+	case 17:;
+		char* name = (char*)arg1;
+		uint8_t initialValue = (uint8_t)arg3;
+		sem_open(name, initialValue);
+		break;
+	case 18:;
+		uint8_t postId = (uint8_t)arg1;
+		sem_post(postId);
+		break;
+	case 19:;
+		uint8_t waitId = (uint8_t)arg1;
+		sem_wait(waitId);
 		break;
     case 33:;
         nanoFace();

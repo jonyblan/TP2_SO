@@ -3,5 +3,7 @@
 
 void startProcess(int argc, char* argv[]);
 void testFunc(int argc, char* argv[]);
+void bloqueadoFunc(int argc, char* argv[]);
+void liberadorFunc(int argc, char* argv[]);
 
 #endif

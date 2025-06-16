@@ -402,6 +402,18 @@ void setPriority(pid_t pid, int newPriority){
 	SYSCALL(16, pid, newPriority, 0);
 }
 
+uint8_t sem_open(const char* name, uint8_t initial_value){
+	return SYSCALL(17, name, (uint64_t)initial_value, 0);
+}
+
+void sem_post(uint8_t id){
+	SYSCALL(18, (uint64_t)id, 0, 0);
+}
+
+void sem_wait(uint8_t id){
+	SYSCALL(19, (uint64_t)id, 0, 0);
+}
+
 typedef struct MM_rq {
   void *address;
   uint64_t size;
