@@ -395,7 +395,7 @@ void* malloc(uint64_t size){
 	return SYSCALL(12, size, 0, 0);
 }
 
-void free(uint64_t* ptr){
+void free(void* ptr){
 	SYSCALL(13, ptr, 0, 0);
 }
 
@@ -534,4 +534,31 @@ int testMalloc(){
 int memStatus(MemStatus *ms)            /* 0 = ok, <0 = error         */
 {
     return syscall(SYS_MEM_STATUS, (uint64_t)ms, 0, 0);
+}
+
+
+typedef struct {
+    uint32_t color;
+    uint16_t up_l_x, up_l_y;
+    uint16_t lo_r_x, lo_r_y;
+} Rectangle;
+
+void clearScreen(void) {
+    SYSCALL(8, 0, 0, 0);
+}
+void changeFontSize(void) {
+    SYSCALL(10, 0, 0, 0);
+}
+void drawRectangle(uint32_t color,
+                   uint16_t x0, uint16_t y0,
+                   uint16_t x1, uint16_t y1)
+{
+    Rectangle r = { color, x0, y0, x1, y1 };
+    SYSCALL(5, &r, 0, 0);
+}
+
+/* -------- registros CPU -------- */
+uint64_t getRegisters(uint64_t dump[17])
+{
+    return SYSCALL(11, dump, 0, 0);
 }

@@ -2,6 +2,7 @@
 #define STANDARD_LIB_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 typedef uint64_t pid_t;
 
@@ -39,7 +40,7 @@ void toMinus(char *str);
 uint64_t getNextToRead(char *c);
 void beep(uint32_t hz, uint32_t ticks);
 void* malloc(uint64_t size);
-void free(uint64_t* ptr);
+void free(void *ptr);
 int testMalloc();
 pid_t createProcess(void* entryPoint, uint64_t argc, char *argv[]);
 int getPriority(pid_t pid);
@@ -60,5 +61,19 @@ void killProcess(pid_t pid);
 
 void blockProcess(pid_t pid);
 
+void    yield(void);                          /* ceder CPU explícitamente        */
+int     fork(void);                           /* si luego querés exec-ing         */
+int     execve(const char *path, char *const argv[]);
+
+
+/* ──────────── semáforos ──────────── */
+void    sem_destroy(uint8_t id);  
+
+void clearScreen(void);                      /* syscall 8 */
+void changeFontSize(void);                   /* syscall 10 */
+void drawRectangle(uint32_t color,           /* syscall 5 */
+                   uint16_t x0, uint16_t y0,
+                   uint16_t x1, uint16_t y1);
+uint64_t getRegisters(uint64_t dump[17]);    /* syscall 11 */
 
 #endif
