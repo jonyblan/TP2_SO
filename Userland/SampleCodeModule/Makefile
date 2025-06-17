@@ -19,6 +19,10 @@ SRC_ASM_DIR  := $(wildcard asm/*.asm)
 OBJ_ROOT_C   := $(SRC_ROOT_C:.c=.o)
 OBJ_ROOT_ASM := $(SRC_ROOT_ASM:.asm=.o)
 
+USER_PROGS += sh
+USER_PROGS += mem ps loop
+USER_PROGS += philosopher
+
 #   c/foo.c   -> c/foo.o   |   asm/bar.asm -> asm/bar.o
 OBJ_C_DIR    := $(patsubst c/%.c,c/%.o,$(SRC_C_DIR))
 OBJ_ASM_DIR  := $(patsubst asm/%.asm,asm/%.o,$(SRC_ASM_DIR))

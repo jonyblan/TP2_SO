@@ -203,6 +203,8 @@ make it return a random todo",
 static uint64_t readCommand(char *buff);
 static int interpret(char *command);
 
+extern int phylo_main(int argc, char *argv[]);
+
 void shell();
 
 void startNanoShell(){
@@ -239,9 +241,11 @@ void shell()
             printf(help_text);
             break;
 
-        case REGISTERS:
-            getRegisters();
-            break;
+        uint64_t regs[17];          /* buffer para los registros   */
+        getRegisters(regs);         /* <<- ahora la llamada es correcta */
+        /* acá los imprimís como quieras */
+        printRegs(regs);            /* tu función de salida        */
+        break;
 
         case TIME:
             printCurrentTime();
@@ -480,9 +484,23 @@ void shell()
 }
 break;
 
-		case PHYLO:;
-	
-			break;
+		case PHYLO: {
+    int N = 5;
+
+    char *p = cmdBuff;
+    while (*p && *p != ' ' && *p != '\t') ++p; /* salta "phylo" */
+    if (*p) {                                 /* hay algo más */
+        N = unsigned_str_to_num((uint64_t[]){0}, 3, p+1);
+    }
+
+    /* armamos argv para el proceso hijo */
+    char nbuf[4];          /* cabe "20\0" */
+    unsigned_num_to_str(N, 0, nbuf);
+    char *args[] = { nbuf, NULL };
+
+    createProcess(phylo_main, 2, args);
+    break;
+}
 
         case -1:
             printf("Command not found: '%s'", cmdBuff);

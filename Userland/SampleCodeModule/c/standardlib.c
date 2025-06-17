@@ -561,4 +561,4 @@ void drawRectangle(uint32_t color,
 uint64_t getRegisters(uint64_t dump[17])
 {
     return SYSCALL(11, dump, 0, 0);
-}
+} 
