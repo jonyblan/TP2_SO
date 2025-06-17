@@ -19,7 +19,7 @@ static char *instructions[] = {"help", "registers", "time", "echo", "clear", "ch
 /*useful*/ "malloc", "realloc", "calloc", "free", "createProcess", "getPriority", "setPriority", 0,};
 
 // add new command here
-static char *help_text ="a\n"/*  " \n- help --> Help display with all commands\n\
+static char *help_text =  " \n- help --> Help display with all commands\n\
 - registers --> Displays the lastest backup of registers\n\
 - time --> Displays time and date\n\
 - echo [string] --> Prints the [string] argument in the display\n\
@@ -42,7 +42,7 @@ static char *help_text ="a\n"/*  " \n- help --> Help display with all commands\n
 - cat -->\n\
 - wc -->\n\
 - filther -->\n\
-- phylo --> " */;
+- phylo --> " ;
 
 
 static uint64_t readCommand(char *buff);
