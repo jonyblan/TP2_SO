@@ -10,6 +10,7 @@
 #include <lib.h>
 #include <memoryManager.h>
 #include <processManager.h>
+#include "memoryManager.h"
 
 #define REGISTERS 18
 
@@ -250,4 +251,13 @@ uint64_t getRegBackup(uint64_t *arr)
     for (int i = 0; i < REGISTERS; i++)
         arr[i] = regs[i];
     return isBackupDone();
+}
+
+uint64_t sys_mem_status(uint64_t rdi, uint64_t _1, uint64_t _2, uint64_t _3)
+{
+    MemStatus *ms = (MemStatus *)rdi;
+    ms->total = km_total();
+    ms->used  = km_used();
+    ms->free  = ms->total - ms->used;
+    return 0;
 }

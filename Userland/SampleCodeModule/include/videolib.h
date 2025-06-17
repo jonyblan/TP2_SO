@@ -2,6 +2,8 @@
 #define VIDEO_LIB_H
 
 #include <stdint.h>
+#include <memStatus.h>
+int memStatus(MemStatus *ms);
 
 typedef struct{
     uint16_t up_l_x;

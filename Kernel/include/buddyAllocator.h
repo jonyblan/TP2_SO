@@ -4,16 +4,16 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* === Parámetros del heap ======================================== */
-#define HEAP_START   0x01000000          /* 16 MiB  (fuera de Kernel+Modules) */
-#define HEAP_ORDER   20                  /* 2^20 = 1 MiB tamaño total          */
-#define MIN_ORDER     6                  /* 2^6  =   64 B bloque mínimo        */
-#define LEVELS       (HEAP_ORDER - MIN_ORDER + 1)
 
-/* === API pública (idéntica a malloc/free) ======================== */
-void  *buddy_alloc (size_t size);
-void   buddy_free  (void *ptr);
-void   buddy_init  (void);
-void   buddy_stats(char *buf, size_t n); /* imprime free-lists p/ comando mem */
+/* Reserva -al estilo malloc- usando el buddy-system 64 B…1 MiB */
+void   *buddy_alloc(size_t size);
+
+/* Libera un bloque previamente reservado con buddy_alloc           */
+void    buddy_free (void *ptr);
+
+/* Estadísticas: total administrado, bytes hoy en uso, dump texto   */
+size_t  buddy_total(void);                  /* siempre 1 MiB */
+size_t  buddy_used (void);
+void    buddy_stats(char *buf, size_t len); /* escribe estado de listas */
 
 #endif

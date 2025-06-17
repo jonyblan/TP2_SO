@@ -5,7 +5,7 @@
 #define ZERO_EXCEPTION_ID 0
 #define OPCODE_EXCEPTION_ID 6
 #define REGISTERS 18
-
+#include <asmWrapper.h>
 static void zero_division();
 static void op_code();
 

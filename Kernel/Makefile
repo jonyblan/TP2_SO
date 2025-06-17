@@ -1,40 +1,68 @@
 include Makefile.inc
 
-KERNEL=kernel.bin
-SOURCES=$(wildcard *.c)
-SOURCES_ASM=$(wildcard asm/*.asm)
-SOURCES_C=$(wildcard c/*.c)
-SOURCES_C+=$(wildcard c/Process/*.c)
-SOURCES_DRIVERS=$(wildcard c/drivers/*.c)
-SOURCES_INTERRUPTIONS=$(wildcard c/interruptions/*.c)
+# ────────────────────────────────────────────────────────────────
+# 1) Backend de memoria
+#    make                → simple
+#    make MEMORY=buddy   → buddy-system
+# ────────────────────────────────────────────────────────────────
+MEMORY ?= simple            # valores válidos:  simple | buddy
 
-OBJECTS=$(SOURCES:.c=.o)
-OBJECTS_ASM=$(SOURCES_ASM:.asm=.o)
-OBJECTS_C=$(SOURCES_C:.c=.o)
-OBJECTS_DRIVERS=$(SOURCES_DRIVERS:.c=.o)
-OBJECTS_INTERRUPTIONS=$(SOURCES_INTERRUPTIONS:.c=.o)
+ifeq ($(MEMORY),buddy)
+    MM_SRC := c/mm/buddyAllocator.c \
+              c/mm/buddyGlue.c \
+			  c/mm/mm_wrappers.c  	
+else
+    MM_SRC := c/mm/memoryManager_simple.c
+endif
 
-LOADERSRC=loader.asm
 
-LOADEROBJECT=$(LOADERSRC:.asm=.o)
-STATICLIBS=
+# ────────────────────────────────────────────────────────────────
+# 2) Fuentes
+# ────────────────────────────────────────────────────────────────
+SRC_TOP        := $(wildcard *.c)
+SRC_ASM        := $(wildcard asm/*.asm)
+SRC_C_COMMON   := $(wildcard c/*.c) \
+                  $(wildcard c/Process/*.c) \
+                  $(wildcard c/drivers/*.c) \
+                  $(wildcard c/interruptions/*.c)
 
+SRC_C          := $(filter-out $(MM_SRC),$(SRC_C_COMMON)) $(MM_SRC)
+
+# ────────────────────────────────────────────────────────────────
+# 3) Objetos
+# ────────────────────────────────────────────────────────────────
+OBJ_ASM   := $(SRC_ASM:.asm=.o)
+OBJ_C     := $(SRC_C:.c=.o)
+OBJ_ALL   := $(OBJ_ASM) $(OBJ_C)
+
+LOADEROBJ := loader.o            # se genera aparte
+KERNEL    := kernel.bin
+
+# ────────────────────────────────────────────────────────────────
+# 4) Targets
+# ────────────────────────────────────────────────────────────────
 all: $(KERNEL)
 
-$(KERNEL): $(LOADEROBJECT) $(OBJECTS) $(STATICLIBS) $(OBJECTS_ASM) $(OBJECTS_C) $(OBJECTS_DRIVERS) $(OBJECTS_INTERRUPTIONS)
-	$(LD) $(LDFLAGS) -T kernel.ld -o $(KERNEL) $(LOADEROBJECT) $(OBJECTS) $(OBJECTS_ASM) $(OBJECTS_C) $(OBJECTS_DRIVERS) $(OBJECTS_INTERRUPTIONS) $(STATICLIBS)
-	$(LD) $(LDFLAGS) -T kernel.ld  --oformat=elf64-x86-64 -o kernel.elf $(LOADEROBJECT) $(OBJECTS) $(OBJECTS_ASM) $(OBJECTS_C) $(OBJECTS_DRIVERS) $(OBJECTS_INTERRUPTIONS) $(STATICLIBS)
+$(KERNEL): $(LOADEROBJ) $(OBJ_ALL)
+	$(LD) $(LDFLAGS) -T kernel.ld -o $@ $^
+	$(LD) $(LDFLAGS) -T kernel.ld --oformat=elf64-x86-64 -o kernel.elf $^
 
+# reglas genéricas
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -I./include -c $< -o $@
 
-%.o : %.asm
+%.o: %.asm
 	$(ASM) $(ASMFLAGS) $< -o $@
 
-$(LOADEROBJECT):
-	$(ASM) $(ASMFLAGS) $(LOADERSRC) -o $(LOADEROBJECT)
+$(LOADEROBJ): loader.asm
+	$(ASM) $(ASMFLAGS) $< -o $@
 
+# ────────────────────────────────────────────────────────────────
+# 5) Limpieza
+# ────────────────────────────────────────────────────────────────
 clean:
-	rm -rf asm/*.o *.o *.bin c/*.o c/drivers/*.o c/interruptions/*.o c/Process/*.o
+	rm -f $(OBJ_ALL) $(LOADEROBJ) $(KERNEL) kernel.elf
+	rm -f asm/*.o c/*.o c/Process/*.o c/drivers/*.o \
+	      c/interruptions/*.o c/mm/*.o
 
 .PHONY: all clean

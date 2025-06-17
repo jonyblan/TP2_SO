@@ -10,6 +10,8 @@ typedef enum
     STDERR,
     STDMARK,
 } FileDescriptor;
+#define SYS_MEM_STATUS 40
+typedef struct { uint32_t total, used, free; } MemStatus;
 
 //uint64_t syscallDispatcher(uint64_t id, ...);
 uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t arg3);

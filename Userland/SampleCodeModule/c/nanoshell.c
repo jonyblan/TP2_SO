@@ -3,6 +3,7 @@
 #include <videolib.h>
 #include <processes.h>
 #include <stddef.h>
+#include <memStatus.h>
 
 #define CMD_MAX_CHARS 100
 #define CMD_NAME_MAX_CHARS 100
@@ -100,7 +101,7 @@ return value: returns a pointer to the allocated memory or NULL in case of error
 "free:\n\
 use: void free(void* pnt)\n\
 description: free frees the memory that was previously allocated by pnt via malloc() or calloc(). Nothing happens if pnt is NULL\n\
-return value: free doesnt return anything\”",
+return value: free doesnt return anything\n",
 "createProcess:\n\
 use:\n\
 description: \n\
@@ -351,9 +352,7 @@ void shell()
 			
 			break;
 
-		case MEM:;
 	
-			break;
 
 		case PS:;
 	
@@ -466,6 +465,20 @@ void shell()
 			}
 			putChar('\n');
 			break;
+        
+        case MEM: ;                         /* ← el punto y coma evita el error del label */
+        {
+            MemStatus ms;
+            if (memStatus(&ms) == 0) {
+                printf("Memory status\n");
+                printf("  Total: %u KiB\n", ms.total / 1024);
+                printf("  Used : %u KiB\n", ms.used  / 1024);
+                printf("  Free : %u KiB\n", ms.free  / 1024);
+            } else {
+            printf("mem: syscall failed\n");
+        }
+}
+break;
 
 		case PHYLO:;
 	
