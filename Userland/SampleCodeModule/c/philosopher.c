@@ -1,42 +1,43 @@
 #include <standardlib.h>
+#include <philosopher.h>
 
 #define MAX_PHILOS 20
 #define THINK_MS   700
 #define EAT_MS     500
 
-static uint8_t forks[MAX_PHILOS];   /* ids de semáforo */
+static uint8_t forks[MAX_PHILOS];   // ids de semáforo 
 
 static void philosopher(uint64_t argc, char *argv[])
 {
-    int id   = (int)argv[0][0];          /* 0..N-1 codificado en un byte */
-    int left = id;                       /* tenedor izquierdo  = id     */
-    int right= (id + 1) % argc;          /* tenedor derecho            */
+    int id   = (int)argv[0][0];          // 0..N-1 codificado en un byte 
+    int left = id;                       // tenedor izquierdo  = id     
+    int right= (id + 1) % argc;          // tenedor derecho            
 
     while (1) {
         printf("P%d pensando\n", id);
         wait(THINK_MS);
 
-        /* toma tenedores (par -> izq primero, impar -> der primero) */
-        if (id & 1) {          /* impar */
+        
+        if (id & 1) {          // impar 
             sem_wait(forks[right]);
             sem_wait(forks[left]);
-        } else {               /* par   */
+        } else {               // par   
             sem_wait(forks[left]);
             sem_wait(forks[right]);
         }
 
-        printf("P%d COMIENDO 🍝\n", id);
+        printf("P %d COMIENDO\n", id);
         wait(EAT_MS);
 
-        /* suelta tenedores */
+        // suelta tenedores 
         sem_post(forks[left]);
         sem_post(forks[right]);
     }
 }
 
-int main(int argc, char *argv[])
+int phylo(int argc, char *argv[])
 {
-    int N = 5;                       /* por defecto */
+    int N = 5;                       
     if (argc == 2)
         N = (int)unsigned_str_to_num((uint64_t[]){0}, 3, argv[1]);
 
@@ -45,10 +46,10 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    /* crear N semáforos (un tenedor cada uno) */
+    // crear N semáforos (un tenedor cada uno) 
     for (int i = 0; i < N; i++) {
         char name[4] = "f0";
-        name[1] += i;                 /* "f0", "f1", ... */
+        name[1] += i;                 // "f0", "f1", ... 
         forks[i] = sem_open(name, 1);
     }
 
@@ -59,5 +60,5 @@ int main(int argc, char *argv[])
         createProcess(philosopher, N, args);
     }
 
-    return 0;      /* el padre (shell) vuelve inmediatamente */
+    return 0;      // el padre (shell) vuelve inmediatamente 
 }

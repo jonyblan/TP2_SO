@@ -1,7 +1,6 @@
 /* sampleCodeModule.c */
 #include <standardlib.h>
 #include <nanoshell.h>
-#include <eliminator.h>
 
 char *v = (char *)0xB8000 + 79 * 2;
 

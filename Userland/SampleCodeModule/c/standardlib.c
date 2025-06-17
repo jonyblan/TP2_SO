@@ -7,7 +7,7 @@ uint64_t syscall(uint64_t rax, uint64_t rbx, uint64_t rdx, uint64_t rcx);
 
 #define SYSCALL(id, a1, a2, a3) syscall((id), (uint64_t)(a1), (uint64_t)(a2), (uint64_t)(a3))
 
-#define MAX_CHARS 1000
+#define MAX_CHARS 500
 #define MAX_NUMBER_LENGTH 100
 
 uint64_t getNextToRead(char *c)
@@ -543,20 +543,20 @@ typedef struct {
     uint16_t lo_r_x, lo_r_y;
 } Rectangle;
 
-void clearScreen(void) {
+/* void clearScreen(void) {
     SYSCALL(8, 0, 0, 0);
-}
-void changeFontSize(void) {
+} */
+/* void changeFontSize(void) {
     SYSCALL(10, 0, 0, 0);
-}
-void drawRectangle(uint32_t color,
+} */
+/* void drawRectangle(uint32_t color,
                    uint16_t x0, uint16_t y0,
                    uint16_t x1, uint16_t y1)
 {
     Rectangle r = { color, x0, y0, x1, y1 };
     SYSCALL(5, &r, 0, 0);
 }
-
+ */
 /* -------- registros CPU -------- */
 uint64_t getRegisters(uint64_t dump[17])
 {

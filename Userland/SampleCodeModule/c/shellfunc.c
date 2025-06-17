@@ -8,7 +8,7 @@ uint64_t syscall(uint64_t rax, uint64_t rbx, uint64_t rdx, uint64_t rcx);
 void throw_zero_division();
 void throw_invalid_opcode();
 
-void getRegisters()
+/* uint64_t getRegisters()
 {
     char *regName[] = {
         "RAX: ", "RBX: ", "RCX: ", "RDX: ", "RSI: ", "RDI: ",
@@ -28,7 +28,7 @@ void getRegisters()
             printf("\n%s %x", regName[i], reg);
         }
     }
-}
+} */
 
 void changeFontSize()
 {
@@ -52,7 +52,7 @@ void testInvalidOpcode()
 {
     throw_invalid_opcode();
 }
-
+/* 
 #define C4  261
 #define Cs4 277
 #define D4  294
@@ -97,9 +97,9 @@ void testInvalidOpcode()
 #define QUARTERN 72
 #define THREEQUARTERSN 54
 #define EIGHTHN 36
-#define SIXTEENTHN 18
+#define SIXTEENTHN 18 */
 
-void nanoAnthem(){
+//void nanoAnthem(){
     /*syscall(9,SIXTEENTHN,0,C4);
     syscall(9,SIXTEENTHN,0,F4);
     syscall(9,EIGHTHN,0,E4);
@@ -209,4 +209,4 @@ void nanoAnthem(){
     syscall(9,EIGHTHN,0,F5); 
     syscall(9,SIXTEENTHN,0,D5);
     syscall(9,QUARTERN,0,C5); */
-}
+//}

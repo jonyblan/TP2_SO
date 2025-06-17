@@ -69,11 +69,11 @@ int     execve(const char *path, char *const argv[]);
 /* ──────────── semáforos ──────────── */
 void    sem_destroy(uint8_t id);  
 
-void clearScreen(void);                      /* syscall 8 */
-void changeFontSize(void);                   /* syscall 10 */
-void drawRectangle(uint32_t color,           /* syscall 5 */
-                   uint16_t x0, uint16_t y0,
-                   uint16_t x1, uint16_t y1);
+//void clearScreen(void);                      /* syscall 8 */
+//void changeFontSize(void);                   /* syscall 10 */
+//void drawRectangle(uint32_t color,           /* syscall 5 */
+//                   uint16_t x0, uint16_t y0,
+//                   uint16_t x1, uint16_t y1);
 uint64_t getRegisters(uint64_t dump[17]);    /* syscall 11 */
 
 #endif
