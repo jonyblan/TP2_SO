@@ -9,3 +9,4 @@ Image/x64BareBonesImage.img
 *.elf
 *.o
 Kernel/kernel.elf
+*.Identifier
