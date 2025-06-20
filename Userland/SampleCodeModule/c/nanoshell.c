@@ -3,6 +3,7 @@
 #include <videolib.h>
 #include <simpleProcess.h>
 #include <stddef.h>
+#include <memStatus.h>
 
 #define CMD_MAX_CHARS 1000
 #define CMD_NAME_MAX_CHARS 100
@@ -257,6 +258,19 @@ void startNanoShell()
 			pid = (uint64_t)createProcess(startProcess);
 			printf("after createProcess: %d\n", pid);
 			break;
+        
+        case MEM: ;                         /* ← el punto y coma evita el error del label */
+        {
+            MemStatus ms;
+            if (memStatus(&ms) == 0) {
+                printf("Memory status\n");
+                printf("  Total: %u KiB\n", ms.total / 1024);
+                printf("  Used : %u KiB\n", ms.used  / 1024);
+                printf("  Free : %u KiB\n", ms.free  / 1024);
+            } else {
+            printf("mem: syscall failed\n");
+        }
+    }
 
         case -1:
             printf("Command not found: '%s'", cmdBuff);

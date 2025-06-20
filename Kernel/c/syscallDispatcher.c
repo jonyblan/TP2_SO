@@ -8,8 +8,9 @@
 #include <time_and_rtc.h>
 #include <soundDriver.h>
 #include <lib.h>
-#include <memoryManager.h>
 #include <processManager.h>
+#include <memStatus.h>
+#include "memoryManager.h"
 
 #define REGISTERS 18
 
@@ -191,4 +192,13 @@ uint64_t getRegBackup(uint64_t *arr)
     for (int i = 0; i < REGISTERS; i++)
         arr[i] = regs[i];
     return isBackupDone();
+}
+
+uint64_t sys_mem_status(uint64_t rdi, uint64_t _1, uint64_t _2,  uint64_t _3)
+{
+    MemStatus *ms = (MemStatus *) rdi;   // puntero que viene de userland
+    ms->total = km_total();              // bytes administrados
+    ms->used  = km_used();               // bytes ocupados
+    ms->free  = ms->total - ms->used;    // libre = total-used
+    return 0;                            // éxito
 }

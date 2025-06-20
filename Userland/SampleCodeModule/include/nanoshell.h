@@ -25,6 +25,7 @@ typedef enum
 	CALLOC,
 	FREE,
 	CREATE_PROCESS,
+	MEM,
 
 	// leave this at the end
 	INSTRUCTION_COUNT,

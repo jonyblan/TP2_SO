@@ -1,6 +1,7 @@
 #include <standardlib.h>
 #include <stdarg.h>
 #include <stddef.h>
+#include <memStatus.h>
 
 
 uint64_t syscall(uint64_t rax, uint64_t rbx, uint64_t rdx, uint64_t rcx);
@@ -476,5 +477,10 @@ int testMalloc(){
 		}
 	}
 	return 0;
+}
+
+int memStatus(MemStatus *ms)            /* 0 = ok, <0 = error         */
+{
+    return syscall(SYS_MEM_STATUS, (uint64_t)ms, 0, 0);
 }
 
