@@ -5,6 +5,8 @@ SOURCES=$(wildcard *.c)
 SOURCES_ASM=$(wildcard asm/*.asm)
 SOURCES_C=$(wildcard c/*.c)
 SOURCES_C+=$(wildcard c/Process/*.c)
+SOURCES_C+=$(wildcard c/Memory/*.c)
+SOURCES_C+=$(wildcard c/Sem/*.c)
 SOURCES_DRIVERS=$(wildcard c/drivers/*.c)
 SOURCES_INTERRUPTIONS=$(wildcard c/interruptions/*.c)
 
@@ -35,6 +37,6 @@ $(LOADEROBJECT):
 	$(ASM) $(ASMFLAGS) $(LOADERSRC) -o $(LOADEROBJECT)
 
 clean:
-	rm -rf asm/*.o *.o *.bin c/*.o c/drivers/*.o c/interruptions/*.o c/Process/*.o 
+	rm -rf asm/*.o *.o *.bin c/*.o c/drivers/*.o c/interruptions/*.o c/Process/*.o c/Memory/*.o c/Sem/*.o 
 
 .PHONY: all clean

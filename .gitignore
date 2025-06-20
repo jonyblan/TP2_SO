@@ -1,1 +1,6 @@
 *.Identifier
+*.o
+/Bootloader
+/Image
+*.bin
+*.elf

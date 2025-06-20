@@ -7,7 +7,10 @@
 #define DEFAULT_PRIORITY 2
 #define MAX_PROCESSES 256
 
-#include "../include/memoryManager.h"
+#define STDIN 0
+#define STDOUT 1
+
+#include <memoryManager.h>
 
 typedef enum{
     READY = 0,
@@ -29,9 +32,9 @@ typedef struct ProcessControlBlock {
     void* entryPoint;               // The function to run (e.g., main of the process)
     
     struct PCB* parent;         // For wait() logic
-    struct PCB* next;           // For scheduling queue
+    struct PCB* next;          // For scheduling queue
 
-    uint8_t fd[2];
+    uint8_t fd[2]; // File descriptors for stdin and stdout
     
     uint8_t foreground;                 // 1 = foreground, 0 = background
     uint8_t waitingChildren;            // Track if wait() is needed. 1 = wait() needed, 0 = wait() not needed
