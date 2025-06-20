@@ -1,63 +1,76 @@
-include Makefile.inc           # define GCC, LD, ASM, {GCC,ASM,LD}FLAGS
+###############################################################################
+# Herramientas y flags genéricos (se definen en Makefile.inc)                 #
+###############################################################################
+include Makefile.inc          # define GCC, LD, ASM y {GCC,ASM,LD}FLAGS
+
+# Elige backend: buddy (default) ───────────  make           → buddy
+#                                            make BACKEND=simple  → heap simple
+BACKEND ?= buddy
 
 ###############################################################################
-#  Selección de backend de memoria                                            #
-#  ▸ make                → usa Buddy (❙ DEFAULT)                              #
-#  ▸ make BACKEND=simple  → usa heap simple                                   #
+# Selección de backend de memoria                                             #
 ###############################################################################
 ifeq ($(BACKEND),simple)
-    GCCFLAGS += -DUSE_SIMPLE_MM          # activa simple_* en el glue
+    GCCFLAGS += -DUSE_SIMPLE_MM
+    MM_SRC    := c/memoryManager.c
+else                               # buddy (default)
+    GCCFLAGS += -DUSE_BUDDY_MM
+    MM_SRC    := c/buddyAllocator.c
 endif
 
-# Desactiva intrínsecos de Clang/GCC que chocan con tus propias funciones
+# Desactivar intrínsecos conflictivos de GCC/Clang
 GCCFLAGS += -fno-builtin-memset -fno-builtin-memcpy \
             -fno-builtin-malloc -fno-builtin-free -fno-builtin-realloc
 
 ###############################################################################
-#  Fuentes – rutas tal cual tu repositorio                                     #
+# Fuentes                                                                      #
 ###############################################################################
-KERNEL      := kernel.bin
+KERNEL          := kernel.bin
 
-# .c en el raíz del kernel  (incluye buddyAllocator.c, memoryManagerGlue.c, etc.)
-SOURCES      := $(wildcard *.c)
+# .c en el raíz del kernel
+SOURCES_ROOT     := $(wildcard *.c)
 
 # Subcarpetas
-SOURCES_ASM  := $(wildcard asm/*.asm)
-SOURCES_C    := $(filter-out c/memoryManager.c, $(wildcard c/*.c))        # <- excluye el viejo backend
-SOURCES_C   += $(wildcard c/Process/*.c)
-SOURCES_DRIVERS        := $(wildcard c/drivers/*.c)
-SOURCES_INTERRUPTIONS  := $(wildcard c/interruptions/*.c)
+SOURCES_ASM      := $(wildcard asm/*.asm)
+SOURCES_C_COMMON := $(filter-out c/memoryManager.c c/buddyAllocator.c, \
+                     $(wildcard c/*.c))
+SOURCES_C_COMMON += $(wildcard c/Process/*.c)
+SOURCES_DRIVERS  := $(wildcard c/drivers/*.c)
+SOURCES_INTR     := $(wildcard c/interruptions/*.c)
+
+# Backend elegido
+SOURCES_C        := $(SOURCES_C_COMMON) $(MM_SRC)
 
 # Objetos
-OBJECTS                := $(SOURCES:.c=.o)
+OBJECTS_ROOT           := $(SOURCES_ROOT:.c=.o)
 OBJECTS_ASM            := $(SOURCES_ASM:.asm=.o)
 OBJECTS_C              := $(SOURCES_C:.c=.o)
 OBJECTS_DRIVERS        := $(SOURCES_DRIVERS:.c=.o)
-OBJECTS_INTERRUPTIONS  := $(SOURCES_INTERRUPTIONS:.c=.o)
+OBJECTS_INTR           := $(SOURCES_INTR:.c=.o)
 
-# Loader
+# Loader (Pure64/bootsector)
 LOADERSRC     := loader.asm
 LOADEROBJECT  := $(LOADERSRC:.asm=.o)
 
-STATICLIBS    :=               # añade .a si las necesitas
+STATICLIBS    :=                               # añade .a si las usas
 
 ###############################################################################
-#  Regla principal                                                             #
+# Regla principal                                                              #
 ###############################################################################
 all: $(KERNEL)
 
-$(KERNEL): $(LOADEROBJECT) $(OBJECTS) $(OBJECTS_ASM) $(OBJECTS_C) \
-           $(OBJECTS_DRIVERS) $(OBJECTS_INTERRUPTIONS) $(STATICLIBS)
+$(KERNEL): $(LOADEROBJECT) $(OBJECTS_ROOT) $(OBJECTS_ASM) $(OBJECTS_C) \
+           $(OBJECTS_DRIVERS) $(OBJECTS_INTR) $(STATICLIBS)
 	$(LD) $(LDFLAGS) -T kernel.ld -o $@ \
-	       $(LOADEROBJECT) $(OBJECTS) $(OBJECTS_ASM) \
-	       $(OBJECTS_C) $(OBJECTS_DRIVERS) $(OBJECTS_INTERRUPTIONS) $(STATICLIBS)
+	       $(LOADEROBJECT) $(OBJECTS_ROOT) $(OBJECTS_ASM) \
+	       $(OBJECTS_C) $(OBJECTS_DRIVERS) $(OBJECTS_INTR) $(STATICLIBS)
 	# ELF con símbolos para GDB
 	$(LD) $(LDFLAGS) -T kernel.ld --oformat=elf64-x86-64 -o kernel.elf \
-	       $(LOADEROBJECT) $(OBJECTS) $(OBJECTS_ASM) \
-	       $(OBJECTS_C) $(OBJECTS_DRIVERS) $(OBJECTS_INTERRUPTIONS) $(STATICLIBS)
+	       $(LOADEROBJECT) $(OBJECTS_ROOT) $(OBJECTS_ASM) \
+	       $(OBJECTS_C) $(OBJECTS_DRIVERS) $(OBJECTS_INTR) $(STATICLIBS)
 
 ###############################################################################
-#  Reglas de compilación                                                       #
+# Reglas de compilación                                                        #
 ###############################################################################
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -I./include -c $< -o $@
@@ -69,10 +82,19 @@ $(LOADEROBJECT): $(LOADERSRC)
 	$(ASM) $(ASMFLAGS) $< -o $@
 
 ###############################################################################
-#  Limpieza                                                                    #
+# Targets de conveniencia                                                      #
+###############################################################################
+simple:      ## Compila con heap simple
+	$(MAKE) clean all BACKEND=simple
+
+buddy:       ## Compila con buddy (default)
+	$(MAKE) clean all BACKEND=buddy
+
+###############################################################################
+# Limpieza                                                                     #
 ###############################################################################
 clean:
-	rm -rf asm/*.o *.o *.bin \
-           c/*.o c/drivers/*.o c/interruptions/*.o
+	$(RM) -rf asm/*.o *.o *.bin \
+           c/**/*.o
 
-.PHONY: all clean
+.PHONY: all clean simple buddy
