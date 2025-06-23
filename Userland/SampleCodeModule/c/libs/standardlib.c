@@ -44,6 +44,32 @@ TimeStamp* getTime(){
 	return ts;
 }
 
+int atoi(const char *str) {
+    int result = 0;
+    int sign = 1;
+
+    // Saltar espacios iniciales
+    while (*str == ' ' || *str == '\t') {
+        str++;
+    }
+
+    // Signo
+    if (*str == '-') {
+        sign = -1;
+        str++;
+    } else if (*str == '+') {
+        str++;
+    }
+
+    // Convertir dígitos
+    while (*str >= '0' && *str <= '9') {
+        result = result * 10 + (*str - '0');
+        str++;
+    }
+
+    return sign * result;
+}
+
 static void signed_num_to_str(int32_t num, char *buff)
 {
     uint32_t i = 0;
@@ -381,13 +407,12 @@ void toMinus(char *str)
     }
 }
 
-char* strchr(const char *str, int c) {
-    while (*str) {
-        if (*str == (char)c)
-            return (char *)str;  
-        str++;
-    }
-    return NULL;
+uint64_t strlen(const char *string) {
+  uint64_t i = 0;
+  while (string[i] != '\0') {
+    i++;
+  }
+  return i;
 }
 
 static char *next=NULL;

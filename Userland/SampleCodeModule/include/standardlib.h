@@ -25,7 +25,9 @@ typedef struct
 void sleep(uint32_t ticks);
 uint32_t unsigned_str_to_num(uint64_t *it, uint64_t buff_length, char *buff);
 void unsigned_num_to_str(uint32_t num, uint32_t start, char *buff);
+int atoi(const char *str);
 char *strchr(const char *str, int c);
+uint64_t strlen(const char *string) ;
 TimeStamp* getTime();
 uint64_t fdprintf(FileDescriptor fd, const char *fmt, ...);
 uint64_t printf(const char *fmt, ...);

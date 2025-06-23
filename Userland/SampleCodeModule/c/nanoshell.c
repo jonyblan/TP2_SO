@@ -19,6 +19,33 @@ typedef struct {
     int isBackground;
 } ParsedCommand;
 
+static void (*instructionFunctions[])(uint8_t, char **) = {
+    helpFunc,             // "help"
+    registersFunc,        // "registers"
+    timeFunc,             // "time"
+    echoFunc,             // "echo"
+    clearFunc,            // "clear"
+    testZeroDivisionFunc,     // "test_zero_division"
+    testInvalidOpcodeFunc,    // "test_invalid_opcode"
+    testMallocFunc,           // "test_malloc"
+    todoFunc,             // "todo"
+    functionsFunc,        // "functions"
+    startProcess,         // "mini_process"
+    testPriorityFunc,     // "test_priority"
+    testSemaphoreFunc,    // "test_semaphore"
+    testPipeFunc,         // "test_pipe"
+    memFunc,              // "mem"
+    psFunc,               // "ps"
+    loopFunc,             // "loop"
+    killFunc,             // "kill"
+    niceFunc,             // "nice"
+    blockFunc,            // "block"
+    catFunc,              // "cat"
+    wcFunc,               // "wc"
+    filterFunc,           // "filther" ← corregí el typo si podés
+    phyloFunc,            // "phylo"
+};
+
 // add new command or useful here
 static char *instructions[] = {"help", "registers", "time", "echo", "clear", "test_zero_division", \
 "test_invalid_opcode", "test_malloc", "todo", "functions", "mini_process", "test_priority",\
@@ -26,87 +53,7 @@ static char *instructions[] = {"help", "registers", "time", "echo", "clear", "te
 "filther", "phylo", \
 /*useful*/ "malloc", "realloc", "calloc", "free", "createProcess", "getPriority", "setPriority", 0,};
 
-// add new command here
-static char *help_text = "Here's a list of all available commands:\n\
-- help --> Help display with all commands\n\
-- registers --> Displays the lastest backup of registers\n\
-- time --> Displays time and date\n\
-- echo [string] --> Prints the [string] argument in the display\n\
-- clear --> clears the display\n\
-- test_zero_division --> Test for the Zero Division exception\n\
-- test_invalid_opcode --> Test for the Invalid Opcode exception\n\
-- test_malloc --> starts the malloc test\n\
-- todo --> displays a random thing that has to be done\n\
-- functions --> displays every page inside the manual\n\
-- mini_process --> creates a new process according to simpleProcess.c\n\
-- test_priority --> test that the priority system is working correctly\n\
-- test_semaphore --> test that the semaphore system is working correctly\n\
-- test_pipe --> test that the pipe system is working correctly\n\
-- mem --> shows the memory state NOT DONE\n\
-";
 
-static char *help_text2 = "- ps --> prints a list of every running process with some data from each NOT DONE\n\
-- loop --> makes a process run and print its id along with a greeting every [count] of seconds\n\
-- kill [pid] --> kills a process based on its [pid] NOT TESTED\n\
-- nice [pid] [new priority] --> changes the [pid] process to be of [new priority] priority NOT TESTED\n\
-- block [pid] --> changes the [pid] process between blocked and unblocked NOT TESTED\n\
-- cat --> prints the stdin\n\
-- wc --> counts the amount of lines in the input\n\
-- filther --> filthers the vowels from the input \n\
-- phylo --> starts running the phylosofers problem. \"a\" to add 1, \"r\" to remove one NOT DONE\n\
-";
-
-// add new command or useful here
-static char *functions = "\
-Commands: help, registers, time, echo, clear, test_zero_division\n\
-test_invalid_opcode, test_malloc, todo, functions, mini_process, test_priority\n\n\n\
-Useful: malloc, realloc, calloc, free, getPriority, setPriority\n";
-
-// add new command or useful here
-static char *todo[] = {
-// help
-"Check that they are on date",
-// registers
-"",
-// time
-"",
-// echo
-"Make it be able to print other things (echo test_malloc for example)",
-// clear
-"",
-// test_zero_divition
-"",
-// test_invalid_opcode
-"",
-// test_malloc
-"",
-// todo
-"write a lot of TODOs\n\
-make it return a random todo",
-// functions
-"Not implemented",
-// mini_process
-"Make easier to understand",
-// test_priority
-"",
-
-// Useful
-
-// malloc
-"",
-// realloc
-"Not implemented",
-// calloc
-"Not implemented",
-// free
-"",
-// createProcess
-"Not implemented",
-// getPriority
-"",
-// setPriority
-"",
-};
 
 static uint64_t readCommand(char *buff);
 static int interpret(char *command);
@@ -119,6 +66,62 @@ void startNanoShell(){
 	pid_t pid = (pid_t)createProcess(&shell, 1, argv);
 }
 
+int countArgs(char **argv) {
+    int i = 0;
+    while (argv[i])
+        i++;
+    return i;
+}
+
+void parseInput(char *input, ParsedCommand *out) {
+    out->hasPipe = 0;
+    out->isBackground = 0;
+    /* memset(out->args1, 0, sizeof(out->args1));
+    memset(out->args2, 0, sizeof(out->args2)); */
+
+    int len = strlen(input);
+    if (len > 0 && input[len - 1] == '&') {
+        out->isBackground = 1;
+        input[len - 1] = 0;
+    }
+
+    // Buscar pipe
+    char *pipePos = strchr(input, '|');
+    if (pipePos) {
+        out->hasPipe = 1;
+        *pipePos = 0;
+        pipePos++;
+    }
+
+    // Parsear primer comando
+    int i = 0;
+    char *tok = strtok(input, " \t");
+    while (tok && i < MAX_ARGS - 1) {
+        out->args1[i++] = tok;
+        tok = strtok(NULL, " \t");
+    }
+    out->cmd1 = out->args1[0];
+
+    // Segundo comando
+    if (out->hasPipe) {
+        i = 0;
+        tok = strtok(pipePos, " \t");
+        while (tok && i < MAX_ARGS - 1) {
+            out->args2[i++] = tok;
+            tok = strtok(NULL, " \t");
+        }
+        out->cmd2 = out->args2[0];
+    }
+}
+
+void (*getFn(const char *cmd))(uint8_t, char **) {
+    for (int i = 0; instructions[i] != NULL; i++) {
+        if (strcmp(instructions[i], cmd) == 0) {
+            return instructionFunctions[i];
+        }
+    }
+    return NULL;
+}
 // add new command here
 void shell()
 {
@@ -129,35 +132,84 @@ void shell()
         fdprintf(STDMARK, PROMPT);
         int command_length = readLine(cmdBuff, CMD_MAX_CHARS);
 
-        int interpretation = interpret(cmdBuff);
-		
-		TimeStamp ts = {0};
+        ParsedCommand parsed = {0};
+        parseInput(cmdBuff,&parsed);
 
-        char toPrint[100];
-        int i = 0;
-		int j = 0;
-
-
-		char* argv[] = {""};
-
-		pid_t pid;
-
-        switch (interpretation)
+        if (parsed.cmd1 == NULL)
         {
-        case HELP:
+            continue;
+        }
+        
+        hasToWait= !parsed.isBackground;
+
+        
+		
+        if (parsed.hasPipe) {
+            /* int pipeFD[2];
+            createPipe(pipeFD); */
+
+            void (*fn1)(uint8_t, char **) = getFn(parsed.cmd1);
+            void (*fn2)(uint8_t, char **) = getFn(parsed.cmd2);
+
+            if (!fn1 || !fn2) {
+                printf("Unknown command in pipe: %s | %s\n", parsed.cmd1, parsed.cmd2);
+                continue;
+            }
+
+            pid_t p1 = createProcess(fn1, countArgs(parsed.args1), parsed.args1);
+            /* setStdout(p1, pipeFD[1]); */
+
+            pid_t p2 = createProcess(fn2, countArgs(parsed.args2), parsed.args2);
+            /* setStdin(p2, pipeFD[0]); */
+
+            if (!parsed.isBackground) {
+                fgProccess = p2;
+            } else {
+                fgProccess = NULL;
+            }
+
+            continue;
+        }
+
+        void (*fn)(uint8_t, char **) = getFn(parsed.cmd1);
+
+        if ( fn == NULL) {
+            printf("Command not found: '%s'\n", parsed.cmd1);
+            fgProccess = NULL;
+            continue;
+        }
+
+        // Si tenés casos especiales, seguí con tu switch(interpretation)
+         int interpretation = interpret(parsed.cmd1);
+        pid_t pid = createProcess(fn, countArgs(parsed.args1), parsed.args1);
+        if (!parsed.isBackground)
+            fgProccess = pid;
+
+        if (interpretation != CLEAR)
+        {
+            printf("\n");
+        }
+        if (hasToWait && fgProccess != NULL)
+        {
+            wait(fgProccess);
+        }
+
+        /* switch (interpretation)
+        {
+        /* case HELP:
             printf(help_text);
 			printf(help_text2);
-            break;
+            break; */
 
-        case REGISTERS:
+        /* case REGISTERS:
             getRegisters();
-            break;
+            break; */
 
-        case TIME:
+        /* case TIME:
             printCurrentTime();
-            break;
+            break; */
 
-        case ECHO:
+        /* case ECHO:
             while (cmdBuff[i] && cmdBuff[i] != ' ' && cmdBuff != '\t')
             {
                 i++;
@@ -169,25 +221,25 @@ void shell()
             }
             toPrint[j] = 0;
             printf(toPrint);
-            break;
+            break; */
             
-        case CLEAR:
+        /* case CLEAR:
             clearScreen();
-            break;
+            break; */
 
-        case TEST_ZERO_DIVISION:
+        /* case TEST_ZERO_DIVISION:
             testZeroDivision();
             break;
 
         case TEST_INVALID_OPCODE:
             testInvalidOpcode();
-            break;
+            break; */
 
-		case TEST_MALLOC:
+		/* case TEST_MALLOC:
 			printf("%d", testMalloc());
-			break;
+			break; */
 
-		case TODO:
+		/* case TODO:
     		syscall(6, &ts, 0, 0);
 			while(todo[ts.seconds%INSTRUCTION_COUNT] == ""){
 				ts.seconds++;
@@ -195,16 +247,16 @@ void shell()
 			printf("%d\n", ts.seconds);
 			printf("%s\n", todo[ts.seconds%INSTRUCTION_COUNT]);
 			break;
-
-		case FUNCTIONS:
+ */
+		/* case FUNCTIONS:
 			printf("%s\n", functions);
-			break;
+			break; */
 
-		case MINI_PROCESS:
+		/* case MINI_PROCESS:
 			pid = (pid_t)createProcess(&startProcess, 1, argv);
-			break;
+			break; */
 		
-		case TEST_PRIORITY:
+		/* case TEST_PRIORITY:
 			;
 			pid_t pid1, pid2, pid3;
 			pid1 = (pid_t)createProcess(&testFunc, 1, argv);
@@ -215,22 +267,22 @@ void shell()
 			setPriority(pid2, 7);
 			setPriority(pid3, 7);
 			printf("priorities: %d: %d, %d: %d, %d: %d\n\n", pid1, getPriority(pid1), pid2, getPriority(pid2), pid3, getPriority(pid3));
-			break;
+			break; */
 
-		case TEST_SEMAPHORE:;
+		/* case TEST_SEMAPHORE:;
 			pid_t bloqueado, liberador;
 			bloqueado = (pid_t)createProcess(&bloqueadoFunc, 1, argv);
 			liberador = (pid_t)createProcess(&liberadorFunc, 1, argv);
 			break;
-
-		case TEST_PIPE:;
+ */
+		/* case TEST_PIPE:;
 			pid_t habla, escucha;
 			escucha = (pid_t)createProcess(&escuchaFunc, 1, argv);
 			habla = (pid_t)createProcess(&hablaFunc, 1, argv);
 			setPriority(habla, 5);
-			break;
+			break; */
 
-		case MEM:;
+		/* case MEM:;
 	
 			break;
 
@@ -250,9 +302,9 @@ void shell()
             }
             toPrint[j] = 0;
             createProcess(&loopFunc, 1, toPrint);
-			break;
+			break; */
 
-		case KILL:;
+		/* case KILL:;
 			while (cmdBuff[i] && cmdBuff[i] != ' ' && cmdBuff != '\t')
             {
                 i++;
@@ -266,9 +318,9 @@ void shell()
 			uint64_t itKill = 0;
 			uint32_t pidKill = unsigned_str_to_num(&itKill, 100, toPrint);
 			killProcess(pidKill);
-			break;
+			break; */
 
-		case NICE:;
+		/* case NICE:;
 			while (cmdBuff[i] && cmdBuff[i] != ' ' && cmdBuff != '\t')
             {
                 i++;
@@ -293,9 +345,9 @@ void shell()
             uint32_t priorityNice = unsigned_str_to_num(&itNice2, 1, newPriority);
             printf("PID nice: %d, new priority: %d\n", pidNice, priorityNice);
             setPriority(pidNice, priorityNice);
-			break;
+			break; */
 
-		case BLOCK:;
+		/* case BLOCK:;
 			while (cmdBuff[i] && cmdBuff[i] != ' ' && cmdBuff != '\t')
             {
                 i++;
@@ -310,8 +362,8 @@ void shell()
             uint32_t pidBlock = unsigned_str_to_num(&it, 100, toPrint);
             blockProcess(pidBlock); 
 			break;
-
-		case CAT:;
+ */
+		/* case CAT:;
 			char actualCommand[CMD_MAX_CHARS] = {0};
             for (i = 0; i < CMD_MAX_CHARS && cmdBuff[i] != 0 && cmdBuff[i] != '\t'; i++)
             {
@@ -324,9 +376,9 @@ void shell()
                 putChar(actualCommand[c]);
                 c++;
             }
-			break;
+			break; */
 
-		case WC:; // no tiene sentido pero no tuvimos tiempo de integrarlo con procesos y pipes
+		/* case WC:; // no tiene sentido pero no tuvimos tiempo de integrarlo con procesos y pipes
 
             int lines = 1;
             for (i = 0; i < CMD_MAX_CHARS && cmdBuff[i] != 0 && cmdBuff[i] != '\t'; i++)
@@ -337,9 +389,9 @@ void shell()
             }
 
             printf("lineas: %d\n", lines);
-			break;
+			break; */
 
-		case FILTER:;
+		/* case FILTER:;
 			char noVowels[CMD_MAX_CHARS] = {0};
             for (i = 0; i < CMD_MAX_CHARS && cmdBuff[i] != 0 && cmdBuff[i] != '\t'; i++)
             {
@@ -355,27 +407,18 @@ void shell()
                 putChar(noVowels[k]);
                 k++;
             }
-			break;
-
+			break; */
+/* 
 		case PHYLO:;
 	
-			break;
+			break; */
 			
 
-        case -1:
+        /* case -1:
             printf("Command not found: '%s'", cmdBuff);
             fgProccess = NULL;
             break;
-        }
-
-        if (interpretation != CLEAR)
-        {
-            printf("\n");
-        }
-        if (hasToWait && fgProccess != NULL)
-        {
-            wait(fgProccess);
-        }
+        } */
         
     }
 }

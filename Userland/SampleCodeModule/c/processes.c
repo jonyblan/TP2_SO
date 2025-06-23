@@ -1,5 +1,11 @@
 #include <standardlib.h>
+#include <nanoshell.h>
+#include <stddef.h>
 #include <pipelib.h>
+#include <videolib.h>
+
+extern throw_zero_division();
+extern throw_invalid_opcode();
 
 static char *todo[] = {
 // help
@@ -75,26 +81,12 @@ static char *help_text2 = "- ps --> prints a list of every running process with 
 - phylo --> starts running the phylosofers problem. \"a\" to add 1, \"r\" to remove one NOT DONE\n\
 ";
 
-void startProcess(int argc, char* argv[]){
-	for (int i = 0; i < 10; i++)
-	{
-		printf("Simple process running.\nargc: %d\n", argc);
-	}
-}
+// add new command or useful here
+static char *functions = "\
+Commands: help, registers, time, echo, clear, test_zero_division\n\
+test_invalid_opcode, test_malloc, todo, functions, mini_process, test_priority\n\n\n\
+Useful: malloc, realloc, calloc, free, getPriority, setPriority\n";
 
-void testFunc(int argc, char* argv[]){
-	for (int i = 0; i < 10; i++)
-	{
-		printf("Function %d running!\n", argc);
-	}	
-}
-
-void helpFunc(int argc, char* argv[]){
-	printf("This is a sample process that runs in userland.\n");
-	printf("It can be used to test the system calls and the process management.\n");
-	printf("You can create processes, semaphores, pipes, and more.\n");
-	printf("Use the 'test' command to run this process.\n");
-}
 
 void bloqueadoFunc(int argc, char* argv[]){
 	uint8_t sem = sem_open("test", 1);
@@ -158,3 +150,178 @@ void loopFunc(int argc, char* argv[]){
 		printf("Pid from loop function: %d\n", pid);
 	}
 }
+
+void startProcess(int argc, char* argv[]){
+	for (int i = 0; i < 10; i++)
+	{
+		printf("Simple process running.\nargc: %d\n", argc);
+	}
+}
+
+void testFunc(int argc, char* argv[]){
+	for (int i = 0; i < 10; i++)
+	{
+		printf("Function %d running!\n", argc);
+	}	
+}
+
+void timeFunc(int argc, char* argv[]){
+	printCurrentTime();
+}
+
+echoFunc(int argc, char* argv[]){
+	int i = 0;
+	char toPrint[100];
+	while (argv[i] != NULL && i < 100)
+	{
+		toPrint[i] = argv[i][0];
+		i++;
+	}
+	toPrint[i] = '\0';
+	printf("%s\n", toPrint);
+}
+
+void registersFunc(int argc, char* argv[]){
+	getRegisters();
+}
+
+void helpFunc(int argc, char* argv[]){
+	printf("%s", help_text);
+	printf("%s", help_text2);	
+}
+
+void clearFunc(int argc, char* argv[]){
+	clearScreen();
+}
+
+void testZeroDivisionFunc(int argc, char* argv[]){
+	throw_zero_division();
+}
+
+void testInvalidOpcodeFunc(int argc, char* argv[]){
+	throw_invalid_opcode();
+}
+
+void testMallocFunc(int argc, char* argv[]){
+	printf("%d\n", testMalloc());
+}
+
+void todoFunc(int argc, char* argv[]){
+	TimeStamp* ts ;
+	ts=getTime();
+	while(todo[ts->seconds%INSTRUCTION_COUNT] == ""){
+		ts->seconds++;
+	}
+	printf("%d\n", ts->seconds);
+	printf("%s\n", todo[ts->seconds%INSTRUCTION_COUNT]);
+}
+
+void functionsFunc(int argc, char* argv[]){
+	printf("%s\n", functions);
+}
+
+void testPriorityFunc(int argc, char* argv[]){
+	pid_t pid1, pid2, pid3;
+	pid1 = (pid_t)createProcess(&testFunc, 1, argv);
+	pid2 = (pid_t)createProcess(&testFunc, 2, argv);
+	pid3 = (pid_t)createProcess(&testFunc, 3, argv);
+	printf("priorities: %d: %d, %d: %d, %d: %d\n\n", pid1, getPriority(pid1), pid2, getPriority(pid2), pid3, getPriority(pid3));
+	setPriority(pid1, 1);
+	setPriority(pid2, 7);
+	setPriority(pid3, 7);
+	printf("priorities: %d: %d, %d: %d, %d: %d\n\n", pid1, getPriority(pid1), pid2, getPriority(pid2), pid3, getPriority(pid3));
+}
+
+void testSemaphoreFunc(int argc, char* argv[]){
+	pid_t pid1, pid2;
+	pid1 = (pid_t)createProcess(&bloqueadoFunc, 1, argv);
+	pid2 = (pid_t)createProcess(&liberadorFunc, 2, argv);
+}
+
+void testPipeFunc(int argc, char* argv[]){
+	pid_t pid1, pid2;
+	pid1 = (pid_t)createProcess(&hablaFunc, 1, argv);
+	pid2 = (pid_t)createProcess(&escuchaFunc, 2, argv);
+}
+
+void memFunc(int argc, char* argv[]){
+	return; // Not implemented
+}
+void psFunc(int argc, char* argv[]){
+	return; // Not implemented
+}
+
+void killFunc(int argc, char* argv[]){
+	if (argc < 2) {
+		printf("Uso: kill [pid]\n");
+		return;
+	}
+	pid_t pid = (pid_t)atoi(argv[1]);
+	if (pid <= 0) {
+		printf("Invalid PID: %s\n", argv[1]);
+		return;
+	}
+	killProcess(pid);
+	printf("Proceso con PID %d killed.\n", pid);
+}
+
+void niceFunc(int argc, char* argv[]){
+	if (argc < 3) {
+		printf("Uso: nice [pid] [new priority]\n");
+		return;
+	}
+	pid_t pid = (pid_t)atoi(argv[1]);
+	int newPriority = atoi(argv[2]);
+	if (pid <= 0 || newPriority < 0) {
+		printf("PID o prioridad inválidos: %s %s\n", argv[1], argv[2]);
+		return;
+	}
+	setPriority(pid, newPriority);
+	printf("Proceso con PID %d cambiado a prioridad %d.\n", pid, newPriority);
+}
+
+void blockFunc(int argc, char* argv[]){
+	if (argc < 2) {
+		printf("Uso: block [pid]\n");
+		return;
+	}
+	pid_t pid = (pid_t)atoi(argv[1]);
+	if (pid <= 0) {
+		printf("PID inválido: %s\n", argv[1]);
+		return;
+	}
+	blockProcess(pid);
+	printf("Proceso con PID %d bloqueado\n", pid);
+}
+
+void catFunc(int argc, char* argv[]){
+	return;
+}
+
+void wcFunc(int argc, char* argv[]){
+	return; // Not implemented
+}
+
+void filterFunc(int argc, char* argv[]){
+	/* char noVowels[CMD_MAX_CHARS] = {0};
+	for (i = 0; i < CMD_MAX_CHARS && cmdBuff[i] != 0 && cmdBuff[i] != '\t'; i++)
+	{
+		if (!strchr("aeiouAEIOU", cmdBuff[i])){
+			noVowels[j] = cmdBuff[i];
+			toMinus(noVowels);
+			j++;
+		}   
+	}
+	noVowels[j] = 0;
+	int k = 6;
+	while (noVowels[k] != 0){
+		putChar(noVowels[k]);
+		k++;
+	} */
+	return; // Not implemented
+}
+
+void phyloFunc(int argc, char* argv[]){
+	return;
+}
+
