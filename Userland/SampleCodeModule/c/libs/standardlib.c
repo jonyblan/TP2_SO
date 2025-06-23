@@ -1,7 +1,7 @@
+#include <userlandLib.h>
 #include <standardlib.h>
 #include <stdarg.h>
 #include <stddef.h>
-
 
 uint64_t syscall(uint64_t rax, uint64_t rbx, uint64_t rdx, uint64_t rcx);
 
@@ -381,6 +381,46 @@ void toMinus(char *str)
     }
 }
 
+char* strchr(const char *str, int c) {
+    while (*str) {
+        if (*str == (char)c)
+            return (char *)str;  
+        str++;
+    }
+    return NULL;
+}
+
+static char *next=NULL;
+char *strtok(char *str, const char *delim) {
+   if (str != 0)
+        next = str;
+    else if (next == 0)
+        return 0;
+
+    char *start = next;
+    while (*start && strchr(delim, *start))
+        start++;
+
+    if (*start == '\0') {
+        next = 0;
+        return 0;
+    }
+
+    char *end = start;
+    while (*end && !strchr(delim, *end))
+        end++;
+
+    if (*end) {
+        *end = '\0';
+        next = end + 1;
+    } else {
+        next = 0;
+    }
+
+    return start;
+}
+
+
 void sleep(uint32_t ticks)
 {
     SYSCALL(7, ticks, 0, 0);
@@ -423,22 +463,6 @@ int sem_wait(uint8_t id){
 	return SYSCALL(19, (uint64_t)id, 0, 0);
 }
 
-uint8_t pipe_open(const char* name){  // fds[0] = read end, fds[1] = write end
-	return (uint8_t)SYSCALL(20, name,0, 0);
-}
-
-uint64_t pipe_write(int fd, const char* buf, uint64_t count){
-	return (uint64_t)SYSCALL(21, fd, buf, count);
-}
-
-uint64_t pipe_read(int fd, char* buf, uint64_t count){
-	return (uint64_t)SYSCALL(22, fd, buf, count);
-}
-
-void pipe_close(int fd){
-	SYSCALL(23, fd, 0, 0);
-}
-
 void killProcess(pid_t pid){
 	SYSCALL(24, pid, 0, 0);
 }
@@ -446,6 +470,15 @@ void killProcess(pid_t pid){
 void blockProcess(pid_t pid){
 	SYSCALL(25, pid, 0, 0);
 }
+
+void wait(pid_t pid){
+    SYSCALL(28, pid, 0, 0);
+}
+
+pid_t getMyPID(){
+    return (pid_t)SYSCALL(26, 0, 0, 0);
+}
+
 
 typedef struct MM_rq {
   void *address;
@@ -528,9 +561,5 @@ int testMalloc(){
 		}
 	}
 	return 0;
-}
-
-pid_t getMyPID(){
-    return (pid_t)SYSCALL(26, 0, 0, 0);
 }
 

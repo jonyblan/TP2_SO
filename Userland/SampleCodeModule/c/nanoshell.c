@@ -3,12 +3,22 @@
 #include <videolib.h>
 #include <processes.h>
 #include <stddef.h>
+#include <pipelib.h>
 
 #define CMD_MAX_CHARS 1000
 #define CMD_NAME_MAX_CHARS 100
 #define PROMPT "NanoShell $> "
+#define MAX_ARGS 10
 
-	
+typedef struct {
+    char *cmd1;
+    char *args1[MAX_ARGS];
+    char *cmd2;
+    char *args2[MAX_ARGS];
+    int hasPipe;
+    int isBackground;
+} ParsedCommand;
+
 // add new command or useful here
 static char *instructions[] = {"help", "registers", "time", "echo", "clear", "test_zero_division", \
 "test_invalid_opcode", "test_malloc", "todo", "functions", "mini_process", "test_priority",\
@@ -100,7 +110,8 @@ make it return a random todo",
 
 static uint64_t readCommand(char *buff);
 static int interpret(char *command);
-
+static pid_t fgProccess=NULL;
+static int hasToWait = 1;
 void shell();
 
 void startNanoShell(){
@@ -217,10 +228,6 @@ void shell()
 			escucha = (pid_t)createProcess(&escuchaFunc, 1, argv);
 			habla = (pid_t)createProcess(&hablaFunc, 1, argv);
 			setPriority(habla, 5);
-			break;
-
-		case SH:;
-			
 			break;
 
 		case MEM:;
@@ -357,6 +364,7 @@ void shell()
 
         case -1:
             printf("Command not found: '%s'", cmdBuff);
+            fgProccess = NULL;
             break;
         }
 
@@ -364,6 +372,11 @@ void shell()
         {
             printf("\n");
         }
+        if (hasToWait && fgProccess != NULL)
+        {
+            wait(fgProccess);
+        }
+        
     }
 }
 

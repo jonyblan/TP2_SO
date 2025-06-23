@@ -6,7 +6,10 @@
 #include <mySem.h>
 #define SEM_NAME_MATCH(name1, name2) (strcmp((name1), (name2)) == 0)
 
+extern void acquireLock(int8_t *lock);
+extern void releaseLock(int8_t *lock);
 
+static spinlock_t createLock = 0;
 NamedSemaphore namedSemaphores[MAX_SEMAPHORES];
 
 uint8_t sem_init(Semaphore* sem, uint8_t initial_value) {
@@ -14,6 +17,7 @@ uint8_t sem_init(Semaphore* sem, uint8_t initial_value) {
         return -1;
 
     sem->value = initial_value;
+    sem->lock = 0; 
     sem->waiters = CreatePCBQueueADT();  // Or zero/init static queue
     if (!sem->waiters) return -1;
 
@@ -24,9 +28,11 @@ uint8_t sem_init(Semaphore* sem, uint8_t initial_value) {
 uint8_t sem_open(const char* name, uint8_t initial_value) {
     if (!name) return -1;
 
+    acquireLock(&createLock);
     // First, search for existing
     for (uint8_t i = 0; i < 5; i++) {
         if (namedSemaphores[i].inUse && SEM_NAME_MATCH(namedSemaphores[i].name, name)) {
+            releaseLock(&createLock);
             return i;
         }
     }
@@ -37,10 +43,12 @@ uint8_t sem_open(const char* name, uint8_t initial_value) {
             namedSemaphores[i].inUse = 1;
             safe_strncpy(namedSemaphores[i].name, name, MAX_NAME_LEN);
             sem_init(&namedSemaphores[i].sem, initial_value);
+            releaseLock(&createLock);
             return i;
         }
     }
 
+    releaseLock(&createLock);
     return -1;  // No free slots
 }
 
@@ -50,13 +58,16 @@ int sem_post(uint8_t id) {
 	}
 
     Semaphore* sem = &namedSemaphores[id].sem;
-    _cli();
+    
+    acquireLock(&sem->lock);
+
     if (getPCBQueueSize(sem->waiters) > 0) {
         PCB* p = dequeueProcess(sem->waiters);
         unblockProcess(p->pid); 
     }
     sem->value++;
-    _sti();
+    
+    releaseLock(&sem->lock);
 	return sem->value;
 
 }
@@ -68,7 +79,7 @@ int sem_wait(uint8_t id) {
 	}
 
     Semaphore* sem = &namedSemaphores[id].sem;
-    _cli();
+    acquireLock(&sem->lock);
 
     if (sem->value > 0) {
         sem->value--;
@@ -77,13 +88,13 @@ int sem_wait(uint8_t id) {
         PCB* current = getCurrentProcess();
         blockProcess(current->pid);
         queueProcess(sem->waiters, current);
-        _sti();
+        releaseLock(&sem->lock);
         yield();  // Voluntary context switch
         return sem->value;
     }
 
-    _sti();
-		return sem->value;
+    releaseLock(&sem->lock);
+	return sem->value;
 }
 
 void sem_destroy(uint8_t id){

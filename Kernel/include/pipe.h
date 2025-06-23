@@ -41,6 +41,8 @@ uint64_t pipe_read(int fd, char* buf, uint64_t count);
 // Cierra un descriptor de pipe (read o write)
 void pipe_close(int fd);
 
+int8_t changeProcessFd(uint16_t pid, uint8_t fd, uint8_t end);
+
 void initPipes();
 
 #endif

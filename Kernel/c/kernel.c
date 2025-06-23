@@ -86,7 +86,7 @@ int main()
 
 	char *argv[] = {0};
 	createFirstProcess((void*)sampleCodeModuleAddress, 0, argv);
-	setTickFrequency(120);
+	setTickFrequency(18);
 	_sti();
 	while (1){}
 	

@@ -19,18 +19,32 @@
 uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t arg3)
 {
     uint64_t ret;
-	pid_t auxPid;
+	pid_t pid;
     switch (id)
     {
     case 3:;
     case 4:;
-        FileDescriptor fd = (FileDescriptor)arg1;
+		pid = getCurrentPID();
+		PCB *pcb = getPCBByPID(pid);
+        FileDescriptor fd;
         char *buffer = (char*)arg2;
         uint64_t count = arg3;
-        if (id == 3)
-            ret = read(fd, buffer, count);
-        else
-            ret = write(fd, buffer, count);
+        if (id == 3){
+			fd= pcb->fd[0]; // IN of process
+			if (fd > 1)
+				ret =pipe_read(fd, buffer, count);
+			else
+            	ret = read(fd, buffer, count);
+		}
+        else{
+			fd= pcb->fd[1]; // OUT of process
+			if (fd > 1){
+				ret= pipe_write(fd, buffer, count);
+			}
+			else{
+				ret= write(fd, buffer, count);
+			}
+		}
         break;
     case 5:;
         // sys_draw_rectangle
@@ -86,13 +100,13 @@ uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t a
 		ret = (uint64_t)createProcess(entryPoint, DEFAULT_PRIORITY, argc, argv); 
 		break;
 	case 15:;
-		auxPid = (pid_t)arg1;
-		ret = (uint64_t)getPriority(auxPid);	
+		pid = (pid_t)arg1;
+		ret = (uint64_t)getPriority(pid);	
 		break;
 	case 16:;
-		auxPid = (pid_t)arg1;
+		pid = (pid_t)arg1;
 		uint8_t newPriority = (uint8_t)arg3; // lo mismo que en el CASE 14
-		setPriority(auxPid, newPriority);
+		setPriority(pid, newPriority);
 		ret = 0;
 		break;
 	case 17:;
@@ -130,7 +144,7 @@ uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t a
 		ret = 0;
 		break;
 	case 24:;
-		pid_t pid = (pid_t) arg1;
+		pid = (pid_t) arg1;
 		killProcess(pid);
 		ret = 0;
 		break;
@@ -141,8 +155,19 @@ uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t a
 	case 26:;
 		ret =getCurrentPID();
 		break;
+	case 27:;
+		pid = (pid_t) arg1;
+		uint8_t fd27 = (uint8_t)arg3;
+		uint8_t end = (uint8_t)arg2;
+		ret = changeProcessFd (pid, fd27, end);
+		break;
+	case 28:;
+		pid = (pid_t)arg1;
+		wait(pid);
+		break;
 	}
-    return ret;
+
+	return ret;
 }
 
 uint64_t read(FileDescriptor fd, char *buffer, uint64_t count)

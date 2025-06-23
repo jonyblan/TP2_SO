@@ -9,15 +9,19 @@
 void _cli(void);
 void _sti(void);
 
+typedef volatile int8_t spinlock_t;
+
 typedef struct {
     int value;
     PCBQueueADT waiters;
+    spinlock_t lock;  
 } Semaphore;
 
 typedef struct {
     int inUse;
     char name[MAX_NAME_LEN];
     Semaphore sem;
+    spinlock_t lock;
 } NamedSemaphore;
 
 uint8_t sem_init(Semaphore* sem, uint8_t initial_value);

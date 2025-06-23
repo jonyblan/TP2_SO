@@ -95,3 +95,35 @@ char *my_strcat(char *dest, const char *src) {
 
     return dest;
 }
+
+void itoa(int value, char *str) {
+    char buffer[12]; // suficiente para int de 32 bits (-2147483648 a 2147483647)
+    int i = 0;
+    int isNegative = 0;
+
+    if (value == 0) {
+        str[0] = '0';
+        str[1] = '\0';
+        return;
+    }
+
+    if (value < 0) {
+        isNegative = 1;
+        value = -value;
+    }
+
+    while (value > 0) {
+        buffer[i++] = (value % 10) + '0';
+        value /= 10;
+    }
+
+    if (isNegative)
+        buffer[i++] = '-';
+
+    // Revertir el buffer en str
+    int j = 0;
+    while (i > 0)
+        str[j++] = buffer[--i];
+    
+    str[j] = '\0';
+}

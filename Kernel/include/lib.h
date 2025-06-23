@@ -15,5 +15,5 @@ uint64_t strlen(const char *string);
 int strcmp(const char* s1, const char* s2);
 char* safe_strncpy(char *dest, const char *src, uint8_t max);
 char *my_strcat(char *dest, const char *src);
-
+void itoa(int value, char *str);
 #endif

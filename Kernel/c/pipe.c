@@ -74,13 +74,14 @@ uint8_t pipe_open(const char* name) {
 
 	if (!pipe) return -1;  // No hay espacio
 
-	return i;
+	return i + 2; // le sumo mas 2 porque el 0 y 1 son stdin y stdout para consola
 }
 
 uint64_t pipe_write(int fd, const char* buf, uint64_t count) {
-    if (fd < 0 || fd >= MAX_PIPES * 2 || !pipeFDs[fd].inUse || pipeFDs[fd].end != PIPE_WRITE)
+    fd -= 2; // Ajustar fd para que coincida con el índice de pipeFDs
+    if (fd < 0 || fd >= MAX_PIPES * 2)
         return -1;
-
+    
     Pipe* pipe = &pipes[fd];
     int written = 0;
 
@@ -98,12 +99,12 @@ uint64_t pipe_write(int fd, const char* buf, uint64_t count) {
 }
 
 uint64_t pipe_read(int fd, char* buf, uint64_t count) {
-    if (fd < 0 || fd >= MAX_PIPES * 2 || !pipeFDs[fd].inUse || pipeFDs[fd].end != PIPE_READ)
+    fd -= 2; // Ajustar fd para que coincida con el índice de pipeFDs
+    if (fd < 0 || fd >= MAX_PIPES * 2 )
         return -1;
-
+    
     Pipe* pipe = &pipes[fd];
     int read = 0;
-
     while (read < count) {
         sem_wait(pipe->read_sem);
         buf[read] = pipe->buffer[pipe->readIdx];
@@ -117,6 +118,7 @@ uint64_t pipe_read(int fd, char* buf, uint64_t count) {
 }
 
 void pipe_close(int fd) {
+    fd -= 2; // Ajustar fd para que coincida con el índice de pipeFDs
     if (fd < 0 || fd >= MAX_PIPES * 2 || !pipeFDs[fd].inUse)
         return;
 
@@ -124,8 +126,18 @@ void pipe_close(int fd) {
 }
 
 void resetBuffer(uint16_t fd){
+    fd-= 2; // Ajustar fd para que coincida con el índice de pipes
     for (size_t i = 0; i < PIPE_BUFFER_SIZE; i++)
     {
         pipes[fd].buffer[i] = 0;
     }
+}
+//funciona bien
+int8_t changeProcessFd(uint16_t pid, uint8_t fd, uint8_t end){
+    if(pid >= MAX_PROCESSES || fd >= MAX_PIPES || end >= 2) {
+        return -1; // Invalid PID, fd, or end
+    }
+    PCB* process= getPCBByPID(pid);
+    process->fd[end]=fd;
+    return 0;
 }

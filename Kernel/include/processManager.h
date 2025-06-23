@@ -11,6 +11,7 @@
 #define STDOUT 1
 
 #include <memoryManager.h>
+#include <pipe.h>
 
 typedef enum{
     READY = 0,
@@ -19,7 +20,7 @@ typedef enum{
 	TERMINATED 
 } State;
 
-typedef struct ProcessControlBlock {
+typedef struct PCB {
     pid_t pid;
     char name[PROCESS_MAX_NAME_LEN];        // Process name (optional but useful)
     
@@ -38,6 +39,8 @@ typedef struct ProcessControlBlock {
     
     uint8_t foreground;                 // 1 = foreground, 0 = background
     uint8_t waitingChildren;            // Track if wait() is needed. 1 = wait() needed, 0 = wait() not needed
+    uint8_t waitSemaphore; // Semaphore for waiting on child processes
+    uint8_t exitStatus; 
     
 	uint8_t argc;
 	char** argv;
@@ -85,6 +88,8 @@ void createFirstProcess(void (*fn)(uint8_t, char **), int argc, char** argv);
 void setPriority(pid_t pid, int newPriority);
 
 int getPriority(pid_t pid);
+
+PCB* getPCBByPID(pid_t pid);
 
 void yield();
 #endif

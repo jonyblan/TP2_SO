@@ -37,6 +37,7 @@ uint8_t getc();
 int strcmp(char *s1, char *s2);
 void toMinus(char *str);
 uint64_t getNextToRead(char *c);
+char *strtok(char *string, const char *delim);
 void beep(uint32_t hz, uint32_t ticks);
 void* malloc(uint64_t size);
 void free(uint64_t* ptr);
@@ -47,14 +48,7 @@ void setPriority(pid_t pid, int newPriority);
 uint8_t sem_open(const char* name, uint8_t initial_value);
 int sem_post(uint8_t id);
 int sem_wait(uint8_t id);
-
-uint8_t pipe_open(const char* name);  // fds[0] = read end, fds[1] = write end
-
-uint64_t pipe_write(int fd, const char* buf, uint64_t count);
-
-uint64_t pipe_read(int fd, char* buf, uint64_t count);
-
-void pipe_close(int fd);
+void wait(pid_t pid);
 
 void killProcess(pid_t pid);
 

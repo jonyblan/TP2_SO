@@ -6,6 +6,7 @@
 #include <videoDriver.h>
 #include <scheduler.h>
 #include <lib.h>
+#include <mySem.h>
 
 extern void idle();
 
@@ -183,6 +184,9 @@ int killProcess(uint8_t pid){
             processes[i].state = TERMINATED;
             queueProcess(terminatedProcessesQueue,&processes[i]);
             processCount--;
+            if(processes[i].parent->waitingChildren){
+                sem_post(processes[i].parent->waitSemaphore);
+            }
             if (getCurrentPID() == pid)
             {
                 yield();
@@ -223,103 +227,40 @@ void cleanTerminatedList(){
         }
     }
 }
-/* #include <processManager.h>
-#include <stddef.h>
-#include <videoDriver.h>
-#include <syscallDispatcher.h>
 
-// This would actually "start" the process by switching context to it
-extern void loadProcessAsm(Process* process);
-
-static void terminateProcess() {
-    // Loop forever for now, since there's no scheduler to switch away
-    while (1) {}
-}
-
-// For now, we just support one process
-static Process* firstProcess = NULL;
-
-void enqueueProcess(Process* process) {
-    firstProcess = process;
-}
-
-Process* allocateProcessStruct(uint8_t argc) {
-    // Allocate space for Process + argv array
-    Process* newProcess = (Process*)malloc(sizeof(Process) + sizeof(char*) * argc);
-    return newProcess;
-}
-
-pid_t generatePid() {
-    return 1; // Basic version that always returns 1
-}
-
-char* strcpy(char* dest, const char* src) {
-    char* original = dest;
-    while ((*dest++ = *src++) != '\0');
-    return original;
-}
-
-size_t strlen(const char* str) {
-    size_t len = 0;
-    while (str[len] != '\0') {
-        len++;
+PCB* getPCBByPID(pid_t pid) {
+    if (pid < 0 || pid >= MAX_PROCESSES) {
+        return NULL; // Invalid PID
     }
-    return len;
+    return &processes[pid];
 }
 
-void* setupStack(Process* p) {
-    uint64_t* stack = (uint64_t*)((uint8_t*)p->stackBase + PROCESS_STACK_SIZE);
+void wait(pid_t pid){
+    if (pid < 0 || pid >= MAX_PROCESSES) {
+        return; // Invalid PID
+    }
 
-    // Stack grows downward: push values in reverse call order
+    
+    
+    PCB* pcb = &processes[pid];
 
-    // Push fake return address (if the function returns, go to terminateProcess)
-    *(--stack) = (uint64_t)terminateProcess;
+    if(pcb->parent != &processes[getCurrentPID()]) {
+        return; 
+    }
 
-    // Push arguments as expected by your calling convention
-    *(--stack) = (uint64_t)p->argc;
-    *(--stack) = (uint64_t)p->argv;
+    if (pcb->state == TERMINATED) {
+        return; // No need to wait, process is already terminated
+    }
 
-    // Push the "return address" for the entryPoint, simulating a call
-    *(--stack) = (uint64_t)p->entryPoint;
 
-    // Push base pointer (fake rbp)
-    *(--stack) = 0;
+    
+    pcb->waitingChildren = 1;
+    char semName[12];
+    itoa(pid, semName);
+    pcb->waitSemaphore = sem_open(semName, 0); // Set semaphore to indicate waiting
+    sem_wait(pcb->waitSemaphore); // Wait for the child process to terminate
+    sem_destroy(pcb->waitSemaphore); // Destroy the semaphore after use
+    pcb->waitingChildren = 0; // Reset waiting state
 
-    return (void*)stack;
+    
 }
-
-pid_t create(void* entryPoint, uint8_t priority, uint8_t foreground, uint8_t argc, char* argv[]) {
-    Process* newProcess = allocateProcessStruct(argc);
-    newProcess->pid = generatePid();
-
-    // Copy argv pointers (strings can stay in caller's memory for now)
-    for (int i = 0; i < argc; i++) {
-    	size_t len = strlen(argv[i]) + 1;
-    	newProcess->argv[i] = malloc(len);
-    	strcpy(newProcess->argv[i], argv[i]);
-	}
-
-	newProcess->argc = argc;
-
-    newProcess->entryPoint = entryPoint;
-    newProcess->priority = priority;
-    newProcess->foreground = foreground;
-    newProcess->state = READY;
-
-    strcpy(newProcess->name, argv[0]);
-
-    newProcess->stackBase = malloc(PROCESS_STACK_SIZE);
-    newProcess->stackPointer = setupStack(newProcess);
-
-    enqueueProcess(newProcess);
-    return newProcess->pid;
-}
-
-pid_t createProcess(void* entryPoint) {
-	int argc = 2;
-	char* argv[] = {"simpleProcess\0", NULL};
-    pid_t pid = create(entryPoint, DEFAULT_PRIORITY, 1, argc, argv);
-    loadProcessAsm(firstProcess);
-    return pid;
-}
- */
