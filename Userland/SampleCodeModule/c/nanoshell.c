@@ -42,14 +42,15 @@ static void (*instructionFunctions[])(uint8_t, char **) = {
     blockFunc,            // "block"
     catFunc,              // "cat"
     wcFunc,               // "wc"
-    filterFunc,           // "filther" ← corregí el typo si podés
+    filterFunc,           // "filther"
     phyloFunc,            // "phylo"
+    NULL,
 };
 
 // add new command or useful here
 static char *instructions[] = {"help", "registers", "time", "echo", "clear", "test_zero_division", \
 "test_invalid_opcode", "test_malloc", "todo", "functions", "mini_process", "test_priority",\
-"test_semaphore", "test_pipe", "sh", "mem", "ps", "loop", "kill", "nice", "block", "cat", "wc", \
+"test_semaphore", "test_pipe", "mem", "ps", "loop", "kill", "nice", "block", "cat", "wc", \
 "filther", "phylo", \
 /*useful*/ "malloc", "realloc", "calloc", "free", "createProcess", "getPriority", "setPriority", 0,};
 
@@ -76,8 +77,8 @@ int countArgs(char **argv) {
 void parseInput(char *input, ParsedCommand *out) {
     out->hasPipe = 0;
     out->isBackground = 0;
-    /* memset(out->args1, 0, sizeof(out->args1));
-    memset(out->args2, 0, sizeof(out->args2)); */
+    memset(out->args1, 0, sizeof(out->args1));
+    memset(out->args2, 0, sizeof(out->args2)); 
 
     int len = strlen(input);
     if (len > 0 && input[len - 1] == '&') {
@@ -85,7 +86,6 @@ void parseInput(char *input, ParsedCommand *out) {
         input[len - 1] = 0;
     }
 
-    // Buscar pipe
     char *pipePos = strchr(input, '|');
     if (pipePos) {
         out->hasPipe = 1;
@@ -93,7 +93,6 @@ void parseInput(char *input, ParsedCommand *out) {
         pipePos++;
     }
 
-    // Parsear primer comando
     int i = 0;
     char *tok = strtok(input, " \t");
     while (tok && i < MAX_ARGS - 1) {
@@ -102,7 +101,6 @@ void parseInput(char *input, ParsedCommand *out) {
     }
     out->cmd1 = out->args1[0];
 
-    // Segundo comando
     if (out->hasPipe) {
         i = 0;
         tok = strtok(pipePos, " \t");
@@ -145,9 +143,10 @@ void shell()
         
 		
         if (parsed.hasPipe) {
-            /* int pipeFD[2];
-            createPipe(pipeFD); */
-
+            uint8_t anonPipe=pipe_open("anonymous");
+            
+            
+            
             void (*fn1)(uint8_t, char **) = getFn(parsed.cmd1);
             void (*fn2)(uint8_t, char **) = getFn(parsed.cmd2);
 
@@ -157,10 +156,10 @@ void shell()
             }
 
             pid_t p1 = createProcess(fn1, countArgs(parsed.args1), parsed.args1);
-            /* setStdout(p1, pipeFD[1]); */
+            changeProcessFd(p1,anonPipe,1);
 
             pid_t p2 = createProcess(fn2, countArgs(parsed.args2), parsed.args2);
-            /* setStdin(p2, pipeFD[0]); */
+            changeProcessFd(p2,anonPipe,0);
 
             if (!parsed.isBackground) {
                 fgProccess = p2;
@@ -179,8 +178,7 @@ void shell()
             continue;
         }
 
-        // Si tenés casos especiales, seguí con tu switch(interpretation)
-         int interpretation = interpret(parsed.cmd1);
+        int interpretation = interpret(parsed.cmd1);
         pid_t pid = createProcess(fn, countArgs(parsed.args1), parsed.args1);
         if (!parsed.isBackground)
             fgProccess = pid;

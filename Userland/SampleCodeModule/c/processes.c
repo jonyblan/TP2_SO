@@ -133,7 +133,7 @@ void escuchaFunc(int argc, char* argv[]){
 	for(int i=0; i < 10; i++){
 		sem_wait(readyToPrint); 
 		char buffer[7];
-		pipe_read(pipeId,buffer,7); // Read from the pipe
+		scanf("%s",buffer); // Read from the pipe
 		printf("%s\n", buffer);
 		sem_post(readyToWrite); 
 		sleep(100);
@@ -170,16 +170,14 @@ void timeFunc(int argc, char* argv[]){
 }
 
 echoFunc(int argc, char* argv[]){
-	int i = 0;
-	char toPrint[100];
-	while (argv[i] != NULL && i < 100)
-	{
-		toPrint[i] = argv[i][0];
-		i++;
-	}
-	toPrint[i] = '\0';
-	printf("%s\n", toPrint);
+    for (int i = 1; i < argc; i++) {  // arrancás desde 1 para ignorar "echo"
+        printf("%s", argv[i]);
+        if (i != argc - 1)
+            printf(" ");
+    }
+    printf("\n");
 }
+
 
 void registersFunc(int argc, char* argv[]){
 	getRegisters();
@@ -245,10 +243,10 @@ void testPipeFunc(int argc, char* argv[]){
 }
 
 void memFunc(int argc, char* argv[]){
-	return; // Not implemented
+	printf("not implemented\n");
 }
 void psFunc(int argc, char* argv[]){
-	return; // Not implemented
+	printf("not implemented\n");
 }
 
 void killFunc(int argc, char* argv[]){
@@ -299,7 +297,7 @@ void catFunc(int argc, char* argv[]){
 }
 
 void wcFunc(int argc, char* argv[]){
-	return; // Not implemented
+	printf("not implemented\n");
 }
 
 void filterFunc(int argc, char* argv[]){
@@ -318,10 +316,10 @@ void filterFunc(int argc, char* argv[]){
 		putChar(noVowels[k]);
 		k++;
 	} */
-	return; // Not implemented
+	printf("not implemented\n");
 }
 
 void phyloFunc(int argc, char* argv[]){
-	return;
+	printf("not implemented\n");
 }
 
