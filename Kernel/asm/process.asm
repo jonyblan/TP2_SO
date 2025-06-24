@@ -5,6 +5,8 @@ global loadProcessAsm
 
 global idle
 
+global forceTimerInterruption
+
 
 %macro pushState 0
     push r15
@@ -52,7 +54,9 @@ loadProcessAsm:
 
 
 idle: 
-    cli
     hlt
     jmp idle
 
+forceTimerInterruption:
+    int 0x20
+    ret

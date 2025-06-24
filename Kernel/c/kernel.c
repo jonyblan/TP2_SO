@@ -17,19 +17,22 @@ extern uint8_t data;
 extern uint8_t bss;
 extern uint8_t endOfKernelBinary;
 extern uint8_t endOfKernel;
+extern void idle();
 
 static const uint64_t PageSize = 0x1000;
 
-void testProcessA(int x) {
-	while (1) {
-		vdPrintDec(x);
+void testProcessA(uint8_t argc, char **argv) {
+	for (int i = 0; i < 20; i++)
+	{
+		vdPrint(argv[i%3]);
 		vdPrintChar('\n');
 		sleep(10);
 	}
 }
 
 void testProcessB() {
-	while (1) {
+	for (int i = 0; i < 10; i++)
+	{
 		vdPrint("Process B running");
 		vdPrintChar('\n');
 		sleep(10);
@@ -84,9 +87,13 @@ int main()
 	
 	initScheduler(getStackBase());
 
-	char *argv[] = {0};
+	/* char *argv[2];
+	argv[0]="hola";
+	argv[1]= "Como estas?";
+	createProcess((void*)testProcessA,10,3,argv); */
+	char* argv[]= {0};
 	createFirstProcess((void*)sampleCodeModuleAddress, 0, argv);
-	setTickFrequency(18);
+	setTickFrequency(120);
 	_sti();
 	while (1){}
 	

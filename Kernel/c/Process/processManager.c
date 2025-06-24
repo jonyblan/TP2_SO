@@ -9,6 +9,7 @@
 #include <mySem.h>
 
 extern void idle();
+extern void forceTimerInterruption();
 
 PCB processes[MAX_PROCESSES];
 static PCBQueueADT terminatedProcessesQueue; //Cola de procesos esperando a que le hagan wait() (Si terminan, su PCB se marca como TERMINATED, por lo que se podria pisar el PCB)
@@ -185,10 +186,12 @@ int killProcess(uint8_t pid){
             queueProcess(terminatedProcessesQueue,&processes[i]);
             processCount--;
             if(processes[i].parent->waitingChildren){
+                vdPrint("para vos gil");
                 sem_post(processes[i].parent->waitSemaphore);
             }
             if (getCurrentPID() == pid)
             {
+                vdPrint("yielding");
                 yield();
             }
             return 0;
@@ -197,7 +200,9 @@ int killProcess(uint8_t pid){
     return -1;
 }
 
-void yield(){return;}
+void yield(){
+    forceTimerInterruption();
+}
 
 void showRunningProcesses(){
     for (size_t i = 0; i < MAX_PROCESSES ; i++)
@@ -240,8 +245,6 @@ void wait(pid_t pid){
         return; // Invalid PID
     }
 
-    
-    
     PCB* pcb = &processes[pid];
 
     if(pcb->parent != &processes[getCurrentPID()]) {
@@ -252,8 +255,6 @@ void wait(pid_t pid){
         return; // No need to wait, process is already terminated
     }
 
-
-    
     pcb->waitingChildren = 1;
     char semName[12];
     itoa(pid, semName);
@@ -261,6 +262,5 @@ void wait(pid_t pid){
     sem_wait(pcb->waitSemaphore); // Wait for the child process to terminate
     sem_destroy(pcb->waitSemaphore); // Destroy the semaphore after use
     pcb->waitingChildren = 0; // Reset waiting state
-
     
 }

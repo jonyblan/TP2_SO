@@ -6,6 +6,14 @@
 #include <memoryManager.h>
 #include <time_and_rtc.h>
 
+static PCB* idlePCB;
+static int idlePID;
+
+/* void idleProcess(uint8_t argc, char **argv) {
+    while (1)
+        _hlt();  // O haltcpu(), si la tenés definida
+} */
+
 schedulerStruct *scheduler;
 
 void initScheduler(void *stackBase) {
@@ -25,6 +33,9 @@ void initScheduler(void *stackBase) {
   for (uint8_t i = 0; i < MAX_PRIO; i++) {
       scheduler->count[i] = 0;
   }
+ /*  char *argv[] = { 0 };
+  idlePID= createProcess((void*)idleProcess,0,0,argv);
+  idlePCB= getPCBByPID(idlePID); */
 }
 
 void scheduleProcess(PCB *pcb) {
@@ -82,6 +93,9 @@ void *schedule(void *rsp) {
 
     // No hay procesos listos
     return rsp;
+    /* scheduler->currentRunningPCB = idlePCB;
+    idlePCB->state = RUNNING;
+    return idlePCB->stackPointer;  */
 }
 
 uint16_t getCurrentPID(){return scheduler->currentRunningPCB->pid;}

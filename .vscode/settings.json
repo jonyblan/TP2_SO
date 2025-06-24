@@ -9,6 +9,9 @@
         "string": "c",
         "unordered_map": "c",
         "vector": "c",
-        "system_error": "c"
+        "system_error": "c",
+        "stddef.h": "c",
+        "memorymanager.h": "c",
+        "scheduler.h": "c"
     }
 }

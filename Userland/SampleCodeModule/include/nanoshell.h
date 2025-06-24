@@ -42,6 +42,6 @@ typedef enum
 	INSTRUCTION_COUNT,
 } INSTRUCTION;
 
-void startNanoShell();
+int startNanoShell();
 
 #endif

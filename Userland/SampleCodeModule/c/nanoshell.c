@@ -62,9 +62,10 @@ static pid_t fgProccess=NULL;
 static int hasToWait = 1;
 void shell();
 
-void startNanoShell(){
+int startNanoShell(){
 	char* argv[] = {""};
-	pid_t pid = (pid_t)createProcess(&shell, 1, argv);
+	pid_t pid = (pid_t)createProcess((void*)&shell, 1, argv);
+    return pid;
 }
 
 int countArgs(char **argv) {
@@ -191,6 +192,28 @@ void shell()
         {
             wait(fgProccess);
         }
+    }
+}
+
+static int interpret(char *command)
+{
+    char actualCommand[CMD_MAX_CHARS] = {0};
+    int i;
+    for (i = 0; i < CMD_MAX_CHARS && command[i] != 0 && command[i] != ' ' && command[i] != '\t'; i++)
+    {
+        actualCommand[i] = command[i];
+        toMinus(actualCommand);
+    }
+    if (i == CMD_MAX_CHARS && command[i] != 0)
+        return -1;
+    for (i = 0; instructions[i]!=0; i++)
+    {
+        if (strcmp(actualCommand, instructions[i]) == 0)
+            return i;
+    }
+    return -1;
+}
+
 
         /* switch (interpretation)
         {
@@ -418,24 +441,3 @@ void shell()
             break;
         } */
         
-    }
-}
-
-static int interpret(char *command)
-{
-    char actualCommand[CMD_MAX_CHARS] = {0};
-    int i;
-    for (i = 0; i < CMD_MAX_CHARS && command[i] != 0 && command[i] != ' ' && command[i] != '\t'; i++)
-    {
-        actualCommand[i] = command[i];
-        toMinus(actualCommand);
-    }
-    if (i == CMD_MAX_CHARS && command[i] != 0)
-        return -1;
-    for (i = 0; instructions[i]!=0; i++)
-    {
-        if (strcmp(actualCommand, instructions[i]) == 0)
-            return i;
-    }
-    return -1;
-}

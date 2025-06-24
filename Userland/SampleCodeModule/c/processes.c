@@ -144,7 +144,7 @@ void loopFunc(int argc, char* argv[]){
 	pid_t pid;
 	pid=getMyPID();
 	
-	int time=5;
+	int time=2;
 	while(1){
 		sleep(120*time); //tick frecuncy * time
 		printf("Pid from loop function: %d\n", pid);
@@ -169,7 +169,7 @@ void timeFunc(int argc, char* argv[]){
 	printCurrentTime();
 }
 
-echoFunc(int argc, char* argv[]){
+void echoFunc(int argc, char* argv[]){
     for (int i = 1; i < argc; i++) {  // arrancás desde 1 para ignorar "echo"
         printf("%s", argv[i]);
         if (i != argc - 1)

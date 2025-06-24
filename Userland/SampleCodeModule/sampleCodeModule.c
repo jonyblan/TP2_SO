@@ -9,8 +9,20 @@ static int var2 = 0;
 
 extern void call_80h();
 
+void idleProcess(){
+	while (1)	
+	{
+		;
+	}
+	
+}
+
 int main()
-{
-	startNanoShell();
+{	
+	int shellPID;
+	shellPID=startNanoShell();
+	
+	wait(shellPID);
+	printf("termine loco");
 	return 0xDEADBEEF;
 }
