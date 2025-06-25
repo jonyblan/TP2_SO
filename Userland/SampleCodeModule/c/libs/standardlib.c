@@ -504,6 +504,10 @@ pid_t getMyPID(){
     return (pid_t)SYSCALL(26, 0, 0, 0,0);
 }
 
+uint8_t ps(processInfo *array){
+    return (uint8_t)SYSCALL(29,array,0,0,0);
+}
+
 
 typedef struct MM_rq {
   void *address;

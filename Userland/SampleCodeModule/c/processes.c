@@ -6,7 +6,7 @@
 
 extern throw_zero_division();
 extern throw_invalid_opcode();
-
+#define MAX_PROCESSES 256
 static char *todo[] = {
 // help
 "Check that they are on date",
@@ -253,7 +253,31 @@ void memFunc(int argc, char* argv[]){
 	printf("not implemented\n");
 }
 void psFunc(int argc, char* argv[]){
-	printf("not implemented\n");
+	processInfo array[MAX_PROCESSES];
+	uint8_t count;
+	count= ps(array);
+	char *msg[] = {"READY", "RUNNING", "BLOCKED", "TERMINATED"};
+	int index = 0;
+	printf("PID\tNombre\tEstado\tPrioridad\tStack Base\t Stack Pointer\n");
+	for (uint8_t i = 0; i < count; i++)
+	{
+		switch (array[i].state) {
+			case RUNNING:;
+				index = 1;
+				break;
+			case BLOCKED:;
+				index = 2;
+				break;
+			case TERMINATED:;
+				index=3;
+				break;
+			default:
+				break;
+		}
+		printf("%d\t | %s\t |  %s\t   | %d\t      |    %x\t     |    %x\n",array[i].pid,array[i].name,msg[index],array[i].priority,array[i].stackBase,array[i].stackPointer);
+	}
+	printf("perdon\n");
+	return;
 }
 
 void killFunc(int argc, char* argv[]){

@@ -26,6 +26,5 @@ int main()
 	shellPID=startNanoShell();
 	
 	wait(shellPID);
-	printf("termine loco");
 	return 0xDEADBEEF;
 }

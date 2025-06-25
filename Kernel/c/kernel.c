@@ -84,7 +84,7 @@ int main()
 {	
 	
 	load_idt();
-	
+	initializeProcesses();
 	initScheduler(getStackBase());
 
 	/* char *argv[2];

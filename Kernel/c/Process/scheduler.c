@@ -9,11 +9,6 @@
 static PCB* idlePCB;
 static int idlePID;
 
-/* void idleProcess(uint8_t argc, char **argv) {
-    while (1)
-        _hlt();  // O haltcpu(), si la tenés definida
-} */
-
 schedulerStruct *scheduler;
 
 void initScheduler(void *stackBase) {
@@ -93,9 +88,6 @@ void *schedule(void *rsp) {
 
     // No hay procesos listos
     return rsp;
-    /* scheduler->currentRunningPCB = idlePCB;
-    idlePCB->state = RUNNING;
-    return idlePCB->stackPointer; */
 }
 
 uint16_t getCurrentPID(){return scheduler->currentRunningPCB->pid;}

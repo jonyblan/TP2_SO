@@ -10,7 +10,7 @@
 
 extern void forceTimerInterruption();
 
-PCB processes[MAX_PROCESSES];
+static PCB processes[MAX_PROCESSES];
 static PCBQueueADT terminatedProcessesQueue; //Cola de procesos esperando a que le hagan wait() (Si terminan, su PCB se marca como TERMINATED, por lo que se podria pisar el PCB)
 PCB* currentProcess;
 static uint8_t processCount= 1;
@@ -44,6 +44,13 @@ void launchProcess(void (*fn)(uint8_t, char **), uint8_t argc, char *argv[]) {
 void *stackStart= (void*) 0x1000000;
 
 
+void initializeProcesses(){
+    for (uint16_t i = 0; i < MAX_PROCESSES; i++)
+    {
+        processes[i].state=TERMINATED;
+    }
+    
+}
 
 void prepareStack(PCB* PCB, void* stack,void* entrypoint) {
     processStack *pStack = stack - sizeof(processStack);
@@ -72,6 +79,8 @@ void createFirstProcess(void (*fn)(uint8_t, char **), int argc, char** argv){
     new->fd[1] = STDOUT; 
     new->stackBase = stackStart;
     new->entryPoint=launchProcess;
+    char name[]="init";
+    memcpy(new->name,name,strlen(name));
     processStack *newStack = new->stackBase - sizeof(processStack);
     newStack->rsp = new->stackBase;
     newStack->rbp = new->stackBase;
@@ -260,15 +269,27 @@ void wait(pid_t pid) {
 }
 
 uint8_t ps(processInfo *toReturn){
-    uint8_t count;
-    for (uint8_t i = 0; i < MAX_PROCESSES; i++)
+    uint8_t count=0;
+    for (uint16_t i = 0; i < MAX_PROCESSES; i++)
     {
-        if (processes[i].state!=TERMINATED)
+        if (processes[i].state==RUNNING || processes[i].state==READY || processes[i].state== BLOCKED)
         {
-            PCB* aux= &processes[i];
             
+            PCB* aux= &processes[i];
+            safe_strncpy(toReturn[count].name,aux->name,MAX_NAME_LEN);
+            toReturn[count].name[MAX_NAME_LEN-1]='\0';
+            toReturn[count].pid=i;
+            toReturn[count].priority=aux->priority;
+            toReturn[count].state= aux->state;
+            toReturn[count].stackBase=  aux->stackBase;
+            toReturn[count].stackPointer= aux->stackPointer;
+            vdPrint(toReturn[count].name);
+            vdPrint(" estado ");
+            vdPrintDec(toReturn[count].state);
+            vdPrintChar('\n');
+            count++;
         }
-        
     }
     
+    return count;
 }

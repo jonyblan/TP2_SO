@@ -12,6 +12,8 @@
         "system_error": "c",
         "stddef.h": "c",
         "memorymanager.h": "c",
-        "scheduler.h": "c"
+        "scheduler.h": "c",
+        "pipe.h": "c",
+        "array": "c"
     }
 }

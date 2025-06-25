@@ -2,6 +2,7 @@
 #define STANDARD_LIB_H
 
 #include <stdint.h>
+#define PROCESS_MAX_NAME_LEN 40
 
 typedef uint64_t pid_t;
 
@@ -12,6 +13,14 @@ typedef enum
     STDMARK,
 } FileDescriptor;
 
+
+typedef enum{
+    READY = 0,
+	RUNNING,
+	BLOCKED,
+	TERMINATED 
+} State;
+
 typedef struct
 {
     uint8_t seconds;
@@ -21,6 +30,16 @@ typedef struct
     uint8_t month;
     uint8_t day;
 } TimeStamp;
+
+
+typedef struct processInfo {
+    char name[PROCESS_MAX_NAME_LEN];
+    pid_t pid;
+    State state;
+    uint8_t priority;
+    void* stackBase;
+    void* stackPointer;
+} processInfo;
 
 void sleep(uint32_t ticks);
 uint32_t unsigned_str_to_num(uint64_t *it, uint64_t buff_length, char *buff);
@@ -57,5 +76,7 @@ void killProcess(pid_t pid);
 void blockProcess(pid_t pid);
 
 pid_t getMyPID();
+
+uint8_t ps(processInfo* array);
 
 #endif

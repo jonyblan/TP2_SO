@@ -82,7 +82,7 @@ extern PCB* currentProcess;
 
 pid_t createProcess(void (*fn)(uint8_t, char **), int priority, int argc, char** argv, const char * name);
 
-int initializeProcesses();
+void initializeProcesses();
 
 void terminateProcess();
 
@@ -101,4 +101,6 @@ int getPriority(pid_t pid);
 PCB* getPCBByPID(pid_t pid);
 
 void yield();
+
+uint8_t ps(processInfo* toReturn);
 #endif

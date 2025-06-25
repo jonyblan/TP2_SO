@@ -166,6 +166,10 @@ uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t a
 		pid = (pid_t)arg1;
 		wait(pid);
 		break;
+	case 29:;
+		processInfo* array= (processInfo*)arg1;
+		ret= ps(array);
+		break;
 	}
 
 	return ret;
