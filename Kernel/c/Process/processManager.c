@@ -192,14 +192,16 @@ int killProcess(uint8_t pid){
             if (processes[i].state == TERMINATED) return -1;
             
             processes[i].state = TERMINATED;
-            queueProcess(terminatedProcessesQueue,&processes[i]);
             processCount--;
             if(processes[i].parent->waitingChildren){
                 sem_post(processes[i].parent->waitSemaphore);
             }
+            
             if (getCurrentPID() == pid)
             {
                 yield();
+            }else{
+                descheduleProcess(&processes[i]);
             }
             return 0;
         }
@@ -283,10 +285,6 @@ uint8_t ps(processInfo *toReturn){
             toReturn[count].state= aux->state;
             toReturn[count].stackBase=  aux->stackBase;
             toReturn[count].stackPointer= aux->stackPointer;
-            vdPrint(toReturn[count].name);
-            vdPrint(" estado ");
-            vdPrintDec(toReturn[count].state);
-            vdPrintChar('\n');
             count++;
         }
     }

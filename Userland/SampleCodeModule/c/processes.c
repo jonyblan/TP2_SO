@@ -249,18 +249,36 @@ void testPipeFunc(int argc, char* argv[]){
 	wait(pid2); */
 }
 
+void useMemoryFunc(int argc, char* argv[]){
+	int time = 10;
+	int size = 0x1000;
+	if(argc == 2 || argc == 3){
+		time = (int)atoi(argv[1]);
+	}
+	if(argc == 3){
+		size = (int)atoi(argv[2]);
+	}
+	int* ptr = malloc(size);
+	printf("Usando %d bytes en memoria y esperando por %d segundos\n", size, time);
+	sleep(120*time);
+	printf("Liberando %d bytes en memoria\n", size);
+	free(ptr);
+	
+}
+
 void memFunc(int argc, char* argv[]){
-	printf("not implemented\n");
+	return;
 }
 void psFunc(int argc, char* argv[]){
 	processInfo array[MAX_PROCESSES];
 	uint8_t count;
 	count= ps(array);
 	char *msg[] = {"READY", "RUNNING", "BLOCKED", "TERMINATED"};
-	int index = 0;
+	int index;
 	printf("PID\tNombre\tEstado\tPrioridad\tStack Base\t Stack Pointer\n");
 	for (uint8_t i = 0; i < count; i++)
 	{
+		index=0;
 		switch (array[i].state) {
 			case RUNNING:;
 				index = 1;
@@ -321,6 +339,20 @@ void blockFunc(int argc, char* argv[]){
 	}
 	blockProcess(pid);
 	printf("Proceso con PID %d bloqueado\n", pid);
+}
+
+void unblockFunc(int argc, char* argv[]){
+	if (argc < 2) {
+		printf("Uso: unblock [pid]\n");
+		return;
+	}
+	pid_t pid = (pid_t)atoi(argv[1]);
+	if (pid <= 0) {
+		printf("PID inválido: %s\n", argv[1]);
+		return;
+	}
+	unblockProcess(pid);
+	printf("Proceso con PID %d desbloqueado\n", pid);
 }
 
 void catFunc(int argc, char* argv[]){

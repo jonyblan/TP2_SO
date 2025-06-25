@@ -74,6 +74,9 @@ void wait(pid_t pid);
 void killProcess(pid_t pid);
 
 void blockProcess(pid_t pid);
+void unblockProcess(pid_t pid);
+
+int* mem();
 
 pid_t getMyPID();
 

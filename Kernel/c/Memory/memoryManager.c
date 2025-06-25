@@ -10,6 +10,8 @@
 #define BLOCK_SIZE 64
 #define BLOCK_COUNT (HEAP_SIZE / BLOCK_SIZE)
 
+int memData[3];
+
 
 typedef struct Block {
     size_t size;
@@ -71,4 +73,31 @@ void free(void* ptr) {
         block->size += sizeof(Block) + block->next->size;
         block->next = block->next->next;
     }
+}
+int* mem(){
+	int size = HEAP_SIZE;
+	int empty = 0;
+	int full = 0;
+	if(!heapStarted){
+		empty = HEAP_SIZE;
+	}
+	else{
+
+		Block* current = head;
+		while (current != NULL) {
+			if(current->free){
+				empty+=current->size;
+			}
+			else{
+				full+=current->size;
+			}
+			current = current->next;
+		}
+	}
+
+	memData[0] = size;
+	memData[1] = empty;
+	memData[2] = full;
+
+	return memData;
 }

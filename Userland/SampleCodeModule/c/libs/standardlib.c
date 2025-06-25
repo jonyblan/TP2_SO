@@ -496,10 +496,17 @@ void blockProcess(pid_t pid){
 	SYSCALL(25, pid, 0, 0,0);
 }
 
+void unblockProcess(pid_t pid){
+    SYSCALL(30,pid,0,0,0);
+}
+
 void wait(pid_t pid){
     SYSCALL(28, pid, 0, 0,0);
 }
 
+int* mem(){
+	return (int*)SYSCALL(31, 0, 0, 0, 0);
+}
 pid_t getMyPID(){
     return (pid_t)SYSCALL(26, 0, 0, 0,0);
 }

@@ -151,7 +151,7 @@ uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t a
 		break;
 	case 25:;
 		pid_t pid25 = (pid_t) arg1;
-		ret = 0;
+		ret= blockProcess(pid25);
 		break;
 	case 26:;
 		ret =getCurrentPID();
@@ -169,6 +169,13 @@ uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t a
 	case 29:;
 		processInfo* array= (processInfo*)arg1;
 		ret= ps(array);
+		break;
+	case 30:;
+		pid= (pid_t)arg1;
+		ret= unblockProcess(pid);
+		break;
+	case 31:;
+		ret = mem();
 		break;
 	}
 

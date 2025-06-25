@@ -102,5 +102,9 @@ PCB* getPCBByPID(pid_t pid);
 
 void yield();
 
+int blockProcess(uint16_t pid);
+
+int unblockProcess(uint16_t pid);
+
 uint8_t ps(processInfo* toReturn);
 #endif

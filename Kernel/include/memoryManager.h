@@ -10,5 +10,6 @@ typedef uint64_t pid_t;
 
 void* malloc(uint64_t size);
 void free(void* ptr);
+int* mem();
 
 #endif
