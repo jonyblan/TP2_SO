@@ -3,6 +3,7 @@
 #include <processManager.h>
 #include <PCBQueueADT.h>
 #include <scheduler.h>
+#include <videoDriver.h>
 #include <mySem.h>
 #define SEM_NAME_MATCH(name1, name2) (strcmp((name1), (name2)) == 0)
 
@@ -56,15 +57,18 @@ int sem_post(uint8_t id) {
     if (id < 0 || id >= MAX_SEMAPHORES || !namedSemaphores[id].inUse){
         return -1;
 	}
-
+    
     Semaphore* sem = &namedSemaphores[id].sem;
     
-    acquireLock(&sem->lock);
 
+    acquireLock(&sem->lock);
     if (getPCBQueueSize(sem->waiters) > 0) {
         PCB* p = dequeueProcess(sem->waiters);
         unblockProcess(p->pid); 
+        releaseLock(&sem->lock);
+        return sem->value;
     }
+    
     sem->value++;
     
     releaseLock(&sem->lock);
@@ -91,7 +95,6 @@ int sem_wait(uint8_t id) {
         yield();  // Voluntary context switch
         return sem->value;
     }
-
     releaseLock(&sem->lock);
 	return sem->value;
 }

@@ -89,7 +89,7 @@ Useful: malloc, realloc, calloc, free, getPriority, setPriority\n";
 
 
 void bloqueadoFunc(int argc, char* argv[]){
-	uint8_t sem = sem_open("test", 1);
+	uint8_t sem = sem_open("test", 0);
 	int j;
 	for (int i = 0; i < 10; i++)
 	{
@@ -101,7 +101,7 @@ void bloqueadoFunc(int argc, char* argv[]){
 }
 
 void liberadorFunc(int argc, char* argv[]){
-	uint8_t sem = sem_open("test", 1);
+	uint8_t sem = sem_open("test", 0);
 	int j;
 	for (int i = 0; i < 10; i++)
 	{
@@ -243,8 +243,10 @@ void testSemaphoreFunc(int argc, char* argv[]){
 
 void testPipeFunc(int argc, char* argv[]){
 	pid_t pid1, pid2;
-	pid1 = (pid_t)createProcess(&hablaFunc, 1, argv);
-	pid2 = (pid_t)createProcess(&escuchaFunc, 2, argv);
+	pid1 = (pid_t)createProcess((void*)hablaFunc, 1, argv);
+	pid2 = (pid_t)createProcess((void*)escuchaFunc, 2, argv);
+	/* wait(pid1);
+	wait(pid2); */
 }
 
 void memFunc(int argc, char* argv[]){
@@ -298,7 +300,12 @@ void blockFunc(int argc, char* argv[]){
 }
 
 void catFunc(int argc, char* argv[]){
-	return;
+	for (int i = 1; i < argc; i++) {
+        printf("%s", argv[i]);
+        if (i < argc - 1)
+            printf(" ");
+    }
+    printf("\n");
 }
 
 void wcFunc(int argc, char* argv[]){
