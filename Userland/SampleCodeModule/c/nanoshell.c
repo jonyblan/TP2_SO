@@ -45,7 +45,6 @@ static void (*instructionFunctions[])(uint8_t, char **) = {
     filterFunc,           // "filther"
     phyloFunc,            // "phylo"
     unblockFunc,          // "unblock"
-    recieveEchoFunc,
     NULL,
 };
 
@@ -53,7 +52,7 @@ static void (*instructionFunctions[])(uint8_t, char **) = {
 static char *instructions[] = {"help", "registers", "time", "echo", "clear", "test_zero_division", \
 "test_invalid_opcode", "test_malloc", "todo", "functions", "mini_process", "test_priority",\
 "test_semaphore", "test_pipe", "mem", "ps", "loop", "kill", "nice", "block", "cat", "wc", \
-"filther", "phylo", "unblock","recieveEcho",\
+"filther", "phylo", "unblock",\
 /*useful*/ "malloc", "realloc", "calloc", "free", "createProcess", "getPriority", "setPriority", 0,};
 
 
@@ -62,6 +61,8 @@ static uint64_t readCommand(char *buff);
 static int interpret(char *command);
 static pid_t fgProccess=NULL;
 static int hasToWait = 1;
+static int pipeCounter=0;
+
 void shell();
 
 int startNanoShell(){
@@ -146,8 +147,10 @@ void shell()
         
 		
         if (parsed.hasPipe) {
-            uint8_t anonPipe=pipe_open("anonymous");
-            
+            char* name;
+            unsigned_num_to_str(pipeCounter,0,name);
+            uint8_t anonPipe=pipe_open(name);
+            pipeCounter++;
             
             
             void (*fn1)(uint8_t, char **) = getFn(parsed.cmd1);

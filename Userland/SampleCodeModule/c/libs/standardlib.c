@@ -312,7 +312,7 @@ uint64_t scanf(const char *fmt, ...)
                 {
                 case 's':;
                     char_dir = va_arg(args, char *);
-                    while (j < buffSize && buffer[j] != ' ' && buffer[j] != '\t')
+                    while (j < buffSize &&  buffer[j] != '\t')
                         *char_dir++ = buffer[j++];
                     *char_dir = 0;
                     i++;

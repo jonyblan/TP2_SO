@@ -27,7 +27,6 @@ void killFunc(int argc, char* argv[]);
 void niceFunc(int argc, char* argv[]);
 void functionsFunc(int argc, char* argv[]);
 void blockFunc(int argc, char* argv[]);
-void recieveEchoFunc(int argc, char* argv[]);
 void unblockFunc(int argc, char* argv[]);
 void catFunc(int argc, char* argv[]);
 void wcFunc(int argc, char* argv[]);

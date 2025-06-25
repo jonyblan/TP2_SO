@@ -178,13 +178,6 @@ void echoFunc(int argc, char* argv[]){
     printf("\n");
 }
 
-void recieveEchoFunc(int argc, char* argv[]){
-	char buffer[100];
-	scanf("%s",buffer);
-	printf("Lo que llego: %s\n",buffer);
-	return;
-}
-
 
 void registersFunc(int argc, char* argv[]){
 	getRegisters();
@@ -364,12 +357,10 @@ void unblockFunc(int argc, char* argv[]){
 }
 
 void catFunc(int argc, char* argv[]){
-	for (int i = 1; i < argc; i++) {
-        printf("%s", argv[i]);
-        if (i < argc - 1)
-            printf(" ");
-    }
-    printf("\n");
+	char buffer[100];
+	scanf("%s",buffer);
+	printf("%s\n",buffer);
+	return;
 }
 
 void wcFunc(int argc, char* argv[]){
