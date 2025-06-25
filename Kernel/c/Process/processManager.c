@@ -8,7 +8,6 @@
 #include <lib.h>
 #include <mySem.h>
 
-extern void idle();
 extern void forceTimerInterruption();
 
 PCB processes[MAX_PROCESSES];
@@ -116,6 +115,7 @@ pid_t createProcess(void (*fn)(uint8_t, char **), int priority, int argc, char**
     }
     args[argc] = NULL; 
     new->argv = args;
+    memcpy(new->name,name,strlen(name));
     new->stackBase = (stackStart + new->pid * PROCESS_STACK_SIZE);
 
 
@@ -257,4 +257,18 @@ void wait(pid_t pid) {
     sem_wait(parent->waitSemaphore);
     sem_destroy(parent->waitSemaphore);
     parent->waitingChildren = 0;
+}
+
+uint8_t ps(processInfo *toReturn){
+    uint8_t count;
+    for (uint8_t i = 0; i < MAX_PROCESSES; i++)
+    {
+        if (processes[i].state!=TERMINATED)
+        {
+            PCB* aux= &processes[i];
+            
+        }
+        
+    }
+    
 }

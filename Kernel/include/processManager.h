@@ -70,10 +70,12 @@ typedef struct processStack{
 }processStack;
 
 typedef struct processInfo {
-    char* name;
+    char name[PROCESS_MAX_NAME_LEN];
     pid_t pid;
     State state;
     uint8_t priority;
+    void* stackBase;
+    void* stackPointer;
 } processInfo;
 
 extern PCB* currentProcess;
