@@ -228,12 +228,17 @@ void testPriorityFunc(int argc, char* argv[]){
 	setPriority(pid2, 7);
 	setPriority(pid3, 7);
 	printf("priorities: %d: %d, %d: %d, %d: %d\n\n", pid1, getPriority(pid1), pid2, getPriority(pid2), pid3, getPriority(pid3));
+	wait(pid1);
+	wait(pid2);
+	wait(pid3);
 }
 
 void testSemaphoreFunc(int argc, char* argv[]){
 	pid_t pid1, pid2;
-	pid1 = (pid_t)createProcess(&bloqueadoFunc, 1, argv);
-	pid2 = (pid_t)createProcess(&liberadorFunc, 2, argv);
+	pid1 = (pid_t)createProcess((void*)bloqueadoFunc, 1, argv);
+	pid2 = (pid_t)createProcess((void*)liberadorFunc, 2, argv);
+	wait(pid1);
+	wait(pid2);
 }
 
 void testPipeFunc(int argc, char* argv[]){
