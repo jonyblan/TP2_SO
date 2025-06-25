@@ -173,9 +173,16 @@ void echoFunc(int argc, char* argv[]){
     for (int i = 1; i < argc; i++) {  // arrancás desde 1 para ignorar "echo"
         printf("%s", argv[i]);
         if (i != argc - 1)
-            printf(" ");
+            printf(" "); 
     }
     printf("\n");
+}
+
+void recieveEchoFunc(int argc, char* argv[]){
+	char buffer[100];
+	scanf("%s",buffer);
+	printf("Lo que llego: %s\n",buffer);
+	return;
 }
 
 
@@ -245,6 +252,7 @@ void testPipeFunc(int argc, char* argv[]){
 	pid_t pid1, pid2;
 	pid1 = (pid_t)createProcess((void*)hablaFunc, 1, argv,"Hablador");
 	pid2 = (pid_t)createProcess((void*)escuchaFunc, 2, argv,"escuchante");
+	printf("Termine\n");
 	/* wait(pid1);
 	wait(pid2); */
 }
