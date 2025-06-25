@@ -186,12 +186,10 @@ int killProcess(uint8_t pid){
             queueProcess(terminatedProcessesQueue,&processes[i]);
             processCount--;
             if(processes[i].parent->waitingChildren){
-                vdPrint("para vos gil");
                 sem_post(processes[i].parent->waitSemaphore);
             }
             if (getCurrentPID() == pid)
             {
-                vdPrint("yielding");
                 yield();
             }
             return 0;
@@ -240,27 +238,23 @@ PCB* getPCBByPID(pid_t pid) {
     return &processes[pid];
 }
 
-void wait(pid_t pid){
-    if (pid < 0 || pid >= MAX_PROCESSES) {
-        return; // Invalid PID
-    }
+void wait(pid_t pid) {
+    if (pid < 0 || pid >= MAX_PROCESSES) return;
 
-    PCB* pcb = &processes[pid];
+    PCB* child = &processes[pid];
+    PCB* parent = getCurrentProcess();
 
-    if(pcb->parent != &processes[getCurrentPID()]) {
-        return; 
-    }
-
-    if (pcb->state == TERMINATED) {
-        return; // No need to wait, process is already terminated
-    }
-
-    pcb->waitingChildren = 1;
+    if (child->parent != parent) return;
+    if (child->state == TERMINATED) return;
+    
+    // Crear semáforo con nombre basado en child's PID
     char semName[12];
     itoa(pid, semName);
-    pcb->waitSemaphore = sem_open(semName, 0); // Set semaphore to indicate waiting
-    sem_wait(pcb->waitSemaphore); // Wait for the child process to terminate
-    sem_destroy(pcb->waitSemaphore); // Destroy the semaphore after use
-    pcb->waitingChildren = 0; // Reset waiting state
     
+    parent->waitSemaphore = sem_open(semName, 0);
+    parent->waitingChildren = 1;
+    
+    sem_wait(parent->waitSemaphore);
+    sem_destroy(parent->waitSemaphore);
+    parent->waitingChildren = 0;
 }

@@ -80,15 +80,14 @@ int sem_wait(uint8_t id) {
 
     Semaphore* sem = &namedSemaphores[id].sem;
     acquireLock(&sem->lock);
-
     if (sem->value > 0) {
         sem->value--;
     }
 	else {
         PCB* current = getCurrentProcess();
-        blockProcess(current->pid);
         queueProcess(sem->waiters, current);
         releaseLock(&sem->lock);
+        blockProcess(current->pid);
         yield();  // Voluntary context switch
         return sem->value;
     }

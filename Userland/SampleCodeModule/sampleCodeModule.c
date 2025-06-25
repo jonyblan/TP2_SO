@@ -10,6 +10,7 @@ static int var2 = 0;
 extern void call_80h();
 
 void idleProcess(){
+	setPriority(getMyPID(),0);
 	while (1)	
 	{
 		;
@@ -19,6 +20,8 @@ void idleProcess(){
 
 int main()
 {	
+	char* argv[]= {0};
+	createProcess((void*)idleProcess,0,argv);
 	int shellPID;
 	shellPID=startNanoShell();
 	
