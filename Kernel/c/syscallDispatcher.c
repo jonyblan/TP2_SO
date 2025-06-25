@@ -16,7 +16,7 @@
 
 #define REGISTERS 18
 
-uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t arg3)
+uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4)
 {
     uint64_t ret;
 	pid_t pid;
@@ -96,8 +96,9 @@ uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t a
     case 14:;
 		void* entryPoint = (void*)arg1;
 		uint64_t argc = (uint64_t)arg3; // por alguna razon argc queda en arg3 y no arg2
-		char** argv = {""};//(char**) arg3;
-		ret = (uint64_t)createProcess(entryPoint, DEFAULT_PRIORITY, argc, argv); 
+		char** argv =/*  {""}; */(char**) arg2;
+		const char * name= (char*) arg4;
+		ret = (uint64_t)createProcess(entryPoint, DEFAULT_PRIORITY, argc, argv,name); 
 		break;
 	case 15:;
 		pid = (pid_t)arg1;

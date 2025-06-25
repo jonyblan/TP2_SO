@@ -44,7 +44,7 @@ void beep(uint32_t hz, uint32_t ticks);
 void* malloc(uint64_t size);
 void free(uint64_t* ptr);
 int testMalloc();
-pid_t createProcess(void* entryPoint, uint64_t argc, char *argv[]);
+pid_t createProcess(void* entryPoint, uint64_t argc, char *argv[], char* name);
 int getPriority(pid_t pid);
 void setPriority(pid_t pid, int newPriority);
 uint8_t sem_open(const char* name, uint8_t initial_value);

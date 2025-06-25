@@ -64,7 +64,7 @@ void shell();
 
 int startNanoShell(){
 	char* argv[] = {""};
-	pid_t pid = (pid_t)createProcess((void*)&shell, 1, argv);
+	pid_t pid = (pid_t)createProcess((void*)&shell, 1, argv,"shell");
     return pid;
 }
 
@@ -156,10 +156,10 @@ void shell()
                 continue;
             }
 
-            pid_t p1 = createProcess(fn1, countArgs(parsed.args1), parsed.args1);
+            pid_t p1 = createProcess(fn1, countArgs(parsed.args1), parsed.args1,parsed.cmd1);
             changeProcessFd(p1,anonPipe,1);
 
-            pid_t p2 = createProcess(fn2, countArgs(parsed.args2), parsed.args2);
+            pid_t p2 = createProcess(fn2, countArgs(parsed.args2), parsed.args2, parsed.cmd2);
             changeProcessFd(p2,anonPipe,0);
 
             if (!parsed.isBackground) {
@@ -180,7 +180,7 @@ void shell()
         }
 
         int interpretation = interpret(parsed.cmd1);
-        pid_t pid = createProcess(fn, countArgs(parsed.args1), parsed.args1);
+        pid_t pid = createProcess(fn, countArgs(parsed.args1), parsed.args1,parsed.cmd1);
         if (!parsed.isBackground)
             fgProccess = pid;
 

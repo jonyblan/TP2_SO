@@ -220,9 +220,9 @@ void functionsFunc(int argc, char* argv[]){
 
 void testPriorityFunc(int argc, char* argv[]){
 	pid_t pid1, pid2, pid3;
-	pid1 = (pid_t)createProcess(&testFunc, 1, argv);
-	pid2 = (pid_t)createProcess(&testFunc, 2, argv);
-	pid3 = (pid_t)createProcess(&testFunc, 3, argv);
+	pid1 = (pid_t)createProcess(&testFunc, 1, argv, "test1");
+	pid2 = (pid_t)createProcess(&testFunc, 2, argv, "test2");
+	pid3 = (pid_t)createProcess(&testFunc, 3, argv, "test3");
 	printf("priorities: %d: %d, %d: %d, %d: %d\n\n", pid1, getPriority(pid1), pid2, getPriority(pid2), pid3, getPriority(pid3));
 	setPriority(pid1, 1);
 	setPriority(pid2, 7);
@@ -235,16 +235,16 @@ void testPriorityFunc(int argc, char* argv[]){
 
 void testSemaphoreFunc(int argc, char* argv[]){
 	pid_t pid1, pid2;
-	pid1 = (pid_t)createProcess((void*)bloqueadoFunc, 1, argv);
-	pid2 = (pid_t)createProcess((void*)liberadorFunc, 2, argv);
+	pid1 = (pid_t)createProcess((void*)bloqueadoFunc, 1, argv,"Bloqueado");
+	pid2 = (pid_t)createProcess((void*)liberadorFunc, 2, argv,"Liberador");
 	wait(pid1);
 	wait(pid2);
 }
 
 void testPipeFunc(int argc, char* argv[]){
 	pid_t pid1, pid2;
-	pid1 = (pid_t)createProcess((void*)hablaFunc, 1, argv);
-	pid2 = (pid_t)createProcess((void*)escuchaFunc, 2, argv);
+	pid1 = (pid_t)createProcess((void*)hablaFunc, 1, argv,"Hablador");
+	pid2 = (pid_t)createProcess((void*)escuchaFunc, 2, argv,"escuchante");
 	/* wait(pid1);
 	wait(pid2); */
 }

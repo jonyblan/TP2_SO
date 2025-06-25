@@ -21,7 +21,7 @@ void idleProcess(){
 int main()
 {	
 	char* argv[]= {0};
-	createProcess((void*)idleProcess,0,argv);
+	createProcess((void*)idleProcess,0,argv,"idle");
 	int shellPID;
 	shellPID=startNanoShell();
 	

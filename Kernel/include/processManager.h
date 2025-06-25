@@ -69,9 +69,16 @@ typedef struct processStack{
     void *ss;
 }processStack;
 
+typedef struct processInfo {
+    char* name;
+    pid_t pid;
+    State state;
+    uint8_t priority;
+} processInfo;
+
 extern PCB* currentProcess;
 
-pid_t createProcess(void (*fn)(uint8_t, char **), int priority, int argc, char** argv);
+pid_t createProcess(void (*fn)(uint8_t, char **), int priority, int argc, char** argv, const char * name);
 
 int initializeProcesses();
 

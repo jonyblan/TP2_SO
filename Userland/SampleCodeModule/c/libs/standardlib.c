@@ -3,16 +3,16 @@
 #include <stdarg.h>
 #include <stddef.h>
 
-uint64_t syscall(uint64_t rax, uint64_t rbx, uint64_t rdx, uint64_t rcx);
+uint64_t syscall(uint64_t rax, uint64_t rbx, uint64_t rdx, uint64_t rcx, uint64_t r8);
 
-#define SYSCALL(id, a1, a2, a3) syscall((id), (uint64_t)(a1), (uint64_t)(a2), (uint64_t)(a3))
+#define SYSCALL(id, a1, a2, a3, a4) syscall((id), (uint64_t)(a1), (uint64_t)(a2), (uint64_t)(a3), (uint64_t)(a4))
 
 #define MAX_CHARS 1000
 #define MAX_NUMBER_LENGTH 100
 
 uint64_t getNextToRead(char *c)
 {
-    return SYSCALL(3, 1, 1, c);
+    return SYSCALL(3, 1, 1, c, 0);
 }
 
 void unsigned_num_to_str(uint32_t num, uint32_t start, char *buff)
@@ -40,7 +40,7 @@ void unsigned_num_to_str(uint32_t num, uint32_t start, char *buff)
 }
 
 TimeStamp* getTime(){
-	TimeStamp* ts =	SYSCALL(6, ts, 0, 0);
+	TimeStamp* ts =	SYSCALL(6, ts, 0, 0,0);
 	return ts;
 }
 
@@ -259,7 +259,7 @@ static uint64_t fdprintfargs(FileDescriptor fd, const char *fmt, va_list args)
     }
     buffer[j++] = 0;
 
-    return SYSCALL(4, fd, j, buffer);
+    return SYSCALL(4, fd, j, buffer,0);
 }
 
 uint64_t fdprintf(FileDescriptor fd, const char *fmt, ...)
@@ -357,7 +357,7 @@ uint64_t
 putChar(uint64_t character)
 {
     uint8_t buffer[] = {character};
-    return SYSCALL(4, 1, 1, buffer);
+    return SYSCALL(4, 1, 1, buffer,0);
 }
 
 uint8_t getc()
@@ -448,60 +448,60 @@ char *strtok(char *str, const char *delim) {
 
 void sleep(uint32_t ticks)
 {
-    SYSCALL(7, ticks, 0, 0);
+    SYSCALL(7, ticks, 0, 0,0);
 }
 
 void beep(uint32_t hz, uint32_t ticks)
 {
-    SYSCALL(9, ticks, 0, hz);
+    SYSCALL(9, ticks, 0, hz,0);
 }
 
 void* malloc(uint64_t size){
-	return SYSCALL(12, size, 0, 0);
+	return SYSCALL(12, size, 0, 0,0);
 }
 
 void free(uint64_t* ptr){
-	SYSCALL(13, ptr, 0, 0);
+	SYSCALL(13, ptr, 0, 0,0);
 }
 
-pid_t createProcess(void* entryPoint, uint64_t argc, char* argv[]){
-	return SYSCALL(14, (uint64_t) entryPoint, argc, argv);
+pid_t createProcess(void* entryPoint, uint64_t argc, char* argv[], char* name){
+	return SYSCALL(14, (uint64_t) entryPoint, argc, argv, name);
 }
 
 int getPriority(pid_t pid){
-	return SYSCALL(15, pid, 0, 0);
+	return SYSCALL(15, pid, 0, 0,0);
 }
 
 void setPriority(pid_t pid, int newPriority){
-	SYSCALL(16, pid, newPriority, 0);
+	SYSCALL(16, pid, newPriority, 0,0);
 }
 
 uint8_t sem_open(const char* name, uint8_t initial_value){
-	return SYSCALL(17, name, (uint64_t)initial_value, 0);
+	return SYSCALL(17, name, (uint64_t)initial_value, 0,0);
 }
 
 int sem_post(uint8_t id){
-	SYSCALL(18, (uint64_t)id, 0, 0);
+	SYSCALL(18, (uint64_t)id, 0, 0,0);
 }
 
 int sem_wait(uint8_t id){
-	return SYSCALL(19, (uint64_t)id, 0, 0);
+	return SYSCALL(19, (uint64_t)id, 0, 0,0);
 }
 
 void killProcess(pid_t pid){
-	SYSCALL(24, pid, 0, 0);
+	SYSCALL(24, pid, 0, 0,0);
 }
 
 void blockProcess(pid_t pid){
-	SYSCALL(25, pid, 0, 0);
+	SYSCALL(25, pid, 0, 0,0);
 }
 
 void wait(pid_t pid){
-    SYSCALL(28, pid, 0, 0);
+    SYSCALL(28, pid, 0, 0,0);
 }
 
 pid_t getMyPID(){
-    return (pid_t)SYSCALL(26, 0, 0, 0);
+    return (pid_t)SYSCALL(26, 0, 0, 0,0);
 }
 
 
