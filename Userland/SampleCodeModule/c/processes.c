@@ -61,20 +61,20 @@ static char *help_text = "Here's a list of all available commands:\n\
 - test_zero_division --> Test for the Zero Division exception\n\
 - test_invalid_opcode --> Test for the Invalid Opcode exception\n\
 - test_malloc --> starts the malloc test\n\
-- todo --> displays a random thing that has to be done\n\
-- functions --> displays every page inside the manual\n\
+- todo --> displays a random thing that has to be done (OUTDATED)\n\
+- functions --> displays every page inside the manual (there is no man though)\n\
 - mini_process --> creates a new process according to simpleProcess.c\n\
 - test_priority --> test that the priority system is working correctly\n\
 - test_semaphore --> test that the semaphore system is working correctly\n\
 - test_pipe --> test that the pipe system is working correctly\n\
-- mem --> shows the memory state NOT DONE\n\
+- mem --> shows the memory state \n\
 ";
 
-static char *help_text2 = "- ps --> prints a list of every running process with some data from each NOT DONE\n\
-- loop --> makes a process run and print its id along with a greeting every [count] of seconds\n\
-- kill [pid] --> kills a process based on its [pid] NOT TESTED\n\
-- nice [pid] [new priority] --> changes the [pid] process to be of [new priority] priority NOT TESTED\n\
-- block [pid] --> changes the [pid] process between blocked and unblocked NOT TESTED\n\
+static char *help_text2 = "- ps --> prints a list of every running process with some data from each \n\
+- loop [count]--> makes a process run and print its id along with a greeting every [count] of seconds\n\
+- kill [pid] --> kills a process based on its [pid] \n\
+- nice [pid] [new priority] --> changes the [pid] process to be of [new priority] priority \n\
+- block [pid] --> changes the [pid] process between blocked and unblocked \n\
 - cat --> prints the stdin\n\
 - wc --> counts the amount of lines in the input\n\
 - filther --> filthers the vowels from the input \n\
