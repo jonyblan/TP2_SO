@@ -1,5 +1,6 @@
 #include <keyboardDriver.h>
 #include <lib.h>
+#include <processManager.h>
 #include <videoDriver.h>
 
 #define KEYS 58
@@ -101,6 +102,7 @@ static int nextToRead = 0;
 int shift = 0;
 int capsLock = 0;
 int registerPressed = 0;
+int ctrl = 0;
 
 void writeIntoBuffer()
 {
@@ -123,6 +125,12 @@ void writeIntoBuffer()
 	case ESC:
 		registerPressed = 1;
 		break;
+	case CTRL_PRESS:
+		ctrl = 1;
+		break;
+	case CTRL_RELEASE:
+		ctrl = 0;
+		break;
 	}
 
 	if (registerPressed)
@@ -135,16 +143,18 @@ void writeIntoBuffer()
 	{
 		if (!isSpecialKey(key))
 		{
-			int index;
-			if (keyValues[key][0] >= 'a' && keyValues[key][0] <= 'z')
-			{
-				index = capsLock ? !shift : shift;
+			int index = (keyValues[key][0] >= 'a' && keyValues[key][0] <= 'z') ? 
+                     (capsLock ? !shift : shift) : shift;
+			char character = keyValues[key][index];
+
+			if (ctrl && (character == 'c' || character == 'C')) {
+				killProcessInFG();
+				buffer[currentKey++] = 0x03; //ASCII para Ctrl+C
+			} else if (ctrl && (character == 'd' || character == 'D')) {
+				buffer[currentKey++] = 0x04; // ASCII para Ctrl+D
+			} else {
+				buffer[currentKey++] = character;
 			}
-			else
-			{
-				index = shift;
-			}
-			buffer[currentKey++] = keyValues[key][index];
 		}
 	}
 	else

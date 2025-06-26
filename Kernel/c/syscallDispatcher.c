@@ -177,6 +177,10 @@ uint64_t syscallDispatcher(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t a
 	case 31:;
 		ret = mem();
 		break;
+	case 32:;
+		pid= (pid_t)arg1;
+		putInFG(pid);
+		break;
 	}
 
 	return ret;

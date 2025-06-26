@@ -364,26 +364,35 @@ void catFunc(int argc, char* argv[]){
 }
 
 void wcFunc(int argc, char* argv[]){
-	printf("not implemented\n");
+	char buffer[256];
+
+    scanf("%s", buffer); 
+
+    int lines = 0;
+    for (int i = 0; buffer[i] != 0; i++) {
+        if (buffer[i] == '\n') {
+            lines++;
+        }
+    }
+
+    if (lines == 0 && buffer[0] != 0)
+        lines = 1;
+
+    printf("Cantidad de líneas: %d\n", lines);
 }
 
 void filterFunc(int argc, char* argv[]){
-	/* char noVowels[CMD_MAX_CHARS] = {0};
-	for (i = 0; i < CMD_MAX_CHARS && cmdBuff[i] != 0 && cmdBuff[i] != '\t'; i++)
-	{
-		if (!strchr("aeiouAEIOU", cmdBuff[i])){
-			noVowels[j] = cmdBuff[i];
-			toMinus(noVowels);
-			j++;
-		}   
-	}
-	noVowels[j] = 0;
-	int k = 6;
-	while (noVowels[k] != 0){
-		putChar(noVowels[k]);
-		k++;
-	} */
-	printf("not implemented\n");
+	char buffer[256];
+
+    scanf("%s", buffer);  
+
+    for (int i = 0; buffer[i] != 0; i++) {
+        char c = buffer[i];
+        if (c != 'a' && c != 'e' && c != 'i' && c != 'o' && c != 'u' && c != 'A' && c != 'E' && c != 'I' && c != 'O' && c != 'U') {
+            putChar(c); 
+        }
+    }
+    putChar('\n');
 }
 
 void phyloFunc(int argc, char* argv[]){

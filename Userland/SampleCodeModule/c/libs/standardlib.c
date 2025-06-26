@@ -168,6 +168,10 @@ uint64_t readLine(char buff[], uint64_t count)
     return i;
 }
 
+void getInFg(pid_t pid){
+    SYSCALL (32,pid,0,0,0);
+}
+
 static uint64_t fdprintfargs(FileDescriptor fd, const char *fmt, va_list args)
 {
     char buffer[MAX_CHARS] = {0};
@@ -312,7 +316,7 @@ uint64_t scanf(const char *fmt, ...)
                 {
                 case 's':;
                     char_dir = va_arg(args, char *);
-                    while (j < buffSize &&  buffer[j] != '\t')
+                    while (j < buffSize )
                         *char_dir++ = buffer[j++];
                     *char_dir = 0;
                     i++;

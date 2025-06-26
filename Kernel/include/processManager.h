@@ -84,9 +84,13 @@ pid_t createProcess(void (*fn)(uint8_t, char **), int priority, int argc, char**
 
 void initializeProcesses();
 
+void putInFG(pid_t pid);
+
 void terminateProcess();
 
 int killProcess(uint8_t pid);
+
+void killProcessInFG();
 
 void quantumTick(); //funcion para manejar los quantums
 

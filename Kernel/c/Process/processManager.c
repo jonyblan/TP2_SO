@@ -15,6 +15,7 @@ static PCBQueueADT terminatedProcessesQueue; //Cola de procesos esperando a que 
 PCB* currentProcess;
 static uint8_t processCount= 1;
 static pid_t nextPID= 1;
+static pid_t fgPid=-1;
 
 int getPriority(pid_t pid){
 	if(pid < 0 || pid > MAX_PROCESSES){
@@ -40,6 +41,19 @@ void launchProcess(void (*fn)(uint8_t, char **), uint8_t argc, char *argv[]) {
   myExit();
 }
 
+void putInFG(pid_t pid){
+    fgPid=pid;
+}
+
+void killProcessInFG(){
+    if (fgPid==-1)
+    {
+        return;
+    }
+    pid_t aux= fgPid;
+    fgPid= -1;
+    killProcess(aux);
+}
 
 void *stackStart= (void*) 0x1000000;
 
