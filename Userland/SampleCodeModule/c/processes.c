@@ -80,6 +80,7 @@ static char *help_text2 = "- ps --> prints a list of every running process with 
 - wc --> counts the amount of lines in the input\n\
 - filther --> filthers the vowels from the input \n\
 - phylo --> starts running the phylosofers problem. \"a\" to add 1, \"r\" to remove one NOT DONE\n\
+- use_memory [time] [size] -->  allocs [size] bytes of memory for [time] seconds. Default is 1000 bytes for 10 seconds \n\
 ";
 
 // add new command or useful here
@@ -271,7 +272,8 @@ void useMemoryFunc(int argc, char* argv[]){
 }
 
 void memFunc(int argc, char* argv[]){
-	return;
+	int* memData = mem();
+	printf("Total: %d\tFree: %d\tUsed: %d\n", memData[0], memData[1], memData[2]);
 }
 void psFunc(int argc, char* argv[]){
 	processInfo array[MAX_PROCESSES];

@@ -32,4 +32,5 @@ void catFunc(int argc, char* argv[]);
 void wcFunc(int argc, char* argv[]);
 void filterFunc(int argc, char* argv[]);
 void phyloFunc(int argc, char* argv[]);
+void useMemoryFunc(int argc, char* argv[]);
 #endif

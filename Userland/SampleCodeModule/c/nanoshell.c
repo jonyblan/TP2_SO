@@ -45,6 +45,7 @@ static void (*instructionFunctions[])(uint8_t, char **) = {
     filterFunc,           // "filther"
     phyloFunc,            // "phylo"
     unblockFunc,          // "unblock"
+    useMemoryFunc,
     NULL,
 };
 
@@ -52,7 +53,7 @@ static void (*instructionFunctions[])(uint8_t, char **) = {
 static char *instructions[] = {"help", "registers", "time", "echo", "clear", "test_zero_division", \
 "test_invalid_opcode", "test_malloc", "todo", "functions", "mini_process", "test_priority",\
 "test_semaphore", "test_pipe", "mem", "ps", "loop", "kill", "nice", "block", "cat", "wc", \
-"filther", "phylo", "unblock",\
+"filther", "phylo", "unblock","use_memory",\
 /*useful*/ "malloc", "realloc", "calloc", "free", "createProcess", "getPriority", "setPriority", 0,};
 
 
