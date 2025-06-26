@@ -74,7 +74,8 @@ static char *help_text2 = "- ps --> prints a list of every running process with 
 - loop [count]--> makes a process run and print its id along with a greeting every [count] of seconds\n\
 - kill [pid] --> kills a process based on its [pid] \n\
 - nice [pid] [new priority] --> changes the [pid] process to be of [new priority] priority \n\
-- block [pid] --> changes the [pid] process between blocked and unblocked \n\
+- block [pid] --> changes the [pid] proces's state to blocked  \n\
+- unblock [pid] --> changes the [pid] proces's state to unblocked \n\
 - cat --> prints the stdin\n\
 - wc --> counts the amount of lines in the input\n\
 - filther --> filthers the vowels from the input \n\
