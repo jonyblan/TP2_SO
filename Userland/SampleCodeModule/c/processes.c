@@ -143,8 +143,10 @@ void escuchaFunc(int argc, char* argv[]){
 void loopFunc(int argc, char* argv[]){
 	pid_t pid;
 	pid=getMyPID();
-	
-	int time=2;
+	int time = 2;
+	if(argc == 2){
+		time = (int)atoi(argv[1]);
+	}
 	while(1){
 		sleep(120*time); //tick frecuncy * time
 		printf("Pid from loop function: %d\n", pid);

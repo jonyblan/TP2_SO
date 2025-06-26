@@ -7,3 +7,6 @@ GCCFLAGS=-m64 -fno-exceptions -fno-asynchronous-unwind-tables -mno-mmx -fno-pie 
 ARFLAGS=rvs
 ASMFLAGS=-felf64
 LDFLAGS=--warn-common -z max-page-size=0x1000
+ifdef BUDDY
+GCCFLAGS += -DUSE_BUDDY
+endif

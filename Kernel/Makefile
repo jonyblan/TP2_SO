@@ -5,7 +5,7 @@ SOURCES=$(wildcard *.c)
 SOURCES_ASM=$(wildcard asm/*.asm)
 SOURCES_C=$(wildcard c/*.c)
 SOURCES_C+=$(wildcard c/Process/*.c)
-SOURCES_C+=$(wildcard c/Memory/*.c)
+SOURCES_C+=$(filter-out c/Memory/simpleMemoryManager.c c/Memory/buddyAllocator.c, $(wildcard c/Memory/*.c))
 SOURCES_C+=$(wildcard c/Sem/*.c)
 SOURCES_DRIVERS=$(wildcard c/drivers/*.c)
 SOURCES_INTERRUPTIONS=$(wildcard c/interruptions/*.c)
@@ -15,7 +15,6 @@ OBJECTS_ASM=$(SOURCES_ASM:.asm=.o)
 OBJECTS_C=$(SOURCES_C:.c=.o)
 OBJECTS_DRIVERS=$(SOURCES_DRIVERS:.c=.o)
 OBJECTS_INTERRUPTIONS=$(SOURCES_INTERRUPTIONS:.c=.o)
-
 LOADERSRC=loader.asm
 
 LOADEROBJECT=$(LOADERSRC:.asm=.o)
